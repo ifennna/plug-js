@@ -16,6 +16,9 @@ export default class Lexer {
     this.skipWhitespace();
 
     switch (this.currentChar) {
+      case "=":
+        token = new Token(Token.ASSIGN, this.currentChar);
+        break;
       case "+":
         token = new Token(Token.PLUS, this.currentChar);
         break;
@@ -29,6 +32,9 @@ export default class Lexer {
         if (this.isLetter(this.currentChar)) {
           const literal = this.readIdentifier();
           token = new Token(Token.IDENTIFIER, literal);
+        } else if (this.isDigit(this.currentChar)) {
+          const digit = this.readNumber();
+          token = new Token(Token.INT, digit);
         } else {
           token = new Token(Token.ILLEGAL, this.currentChar);
         }
@@ -56,9 +62,21 @@ export default class Lexer {
     );
   }
 
+  isDigit(character) {
+    return "0" <= character && character <= "9";
+  }
+
   readIdentifier() {
     const position = this.currentPosition;
     while (this.isLetter(this.currentChar)) {
+      this.readChar();
+    }
+    return this.input.slice(position, this.currentPosition);
+  }
+
+  readNumber() {
+    const position = this.currentPosition;
+    while (this.isDigit(this.currentChar)) {
       this.readChar();
     }
     return this.input.slice(position, this.currentPosition);
