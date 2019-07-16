@@ -25,6 +25,21 @@ export default class Lexer {
       case "-":
         token = new Token(Token.MINUS, this.currentChar);
         break;
+      case ",":
+        token = new Token(Token.COMMA, this.currentChar);
+        break;
+      case "(":
+        token = new Token(Token.LPAREN, this.currentChar);
+        break;
+      case ")":
+        token = new Token(Token.RPAREN, this.currentChar);
+        break;
+      case "{":
+        token = new Token(Token.LBRACE, this.currentChar);
+        break;
+      case "}":
+        token = new Token(Token.RBRACE, this.currentChar);
+        break;
       case ";":
         token = new Token(Token.SEMICOLON, this.currentChar);
         break;

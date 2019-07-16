@@ -11,8 +11,8 @@ const assertions = actual => ({
       console.log("pass");
       return true;
     } else {
-      console.log(`fail: ${actual} does not equal ${expected}`);
-      return false;
+      const message = `fail: ${actual} does not equal ${expected}`;
+      throw new Error(message);
     }
   }
 });

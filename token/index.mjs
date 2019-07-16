@@ -23,10 +23,28 @@ export default class Token {
     return "-";
   }
 
+  static get COMMA() {
+    return ",";
+  }
   static get SEMICOLON() {
     return ";";
   }
+  static get LPAREN() {
+    return "(";
+  }
+  static get RPAREN() {
+    return ")";
+  }
+  static get LBRACE() {
+    return "{";
+  }
+  static get RBRACE() {
+    return "}";
+  }
 
+  static get FUNCTION() {
+    return "FUNCTION";
+  }
   static get LET() {
     return "LET";
   }
@@ -38,6 +56,7 @@ export default class Token {
 
   static get keywords() {
     return {
+      func: Token.FUNCTION,
       let: Token.LET
     };
   }
