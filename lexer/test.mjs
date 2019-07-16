@@ -5,13 +5,13 @@ import { describe, it, expect } from "../testHelpers";
 describe("Lexer", () => {
   describe("test nextToken", () => {
     it("should lex the next token correctly", () => {
-      const input = "a = b + 1";
+      const input = "let five = 5;";
       const expected = [
-        [Token.IDENTIFIER, "a"],
+        [Token.LET, "let"],
+        [Token.IDENTIFIER, "five"],
         [Token.ASSIGN, "="],
-        [Token.IDENTIFIER, "b"],
-        [Token.PLUS, "+"],
-        [Token.INT, 1]
+        [Token.INT, "5"],
+        [Token.SEMICOLON, ";"]
       ];
 
       const lexer = new Lexer(input);

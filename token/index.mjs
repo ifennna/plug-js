@@ -23,8 +23,29 @@ export default class Token {
     return "-";
   }
 
+  static get SEMICOLON() {
+    return ";";
+  }
+
+  static get LET() {
+    return "LET";
+  }
+
   constructor(type, literal) {
     this.type = type;
     this.literal = literal;
+  }
+
+  static get keywords() {
+    return {
+      let: Token.LET
+    };
+  }
+  static lookUpIdentifier(identifier) {
+    if (Object.prototype.hasOwnProperty.call(Token.keywords, identifier)) {
+      return Token.keywords[identifier];
+    }
+
+    return Token.IDENTIFIER;
   }
 }

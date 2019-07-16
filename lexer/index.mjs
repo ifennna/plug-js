@@ -25,16 +25,22 @@ export default class Lexer {
       case "-":
         token = new Token(Token.MINUS, this.currentChar);
         break;
+      case ";":
+        token = new Token(Token.SEMICOLON, this.currentChar);
+        break;
       case 0:
         token = new Token(Token.EOF, "");
         break;
       default:
         if (this.isLetter(this.currentChar)) {
           const literal = this.readIdentifier();
-          token = new Token(Token.IDENTIFIER, literal);
+          const identifier = Token.lookUpIdentifier(literal);
+          token = new Token(identifier, literal);
+          return token;
         } else if (this.isDigit(this.currentChar)) {
           const digit = this.readNumber();
           token = new Token(Token.INT, digit);
+          return token;
         } else {
           token = new Token(Token.ILLEGAL, this.currentChar);
         }
@@ -63,6 +69,7 @@ export default class Lexer {
   }
 
   isDigit(character) {
+    debugger;
     return "0" <= character && character <= "9";
   }
 
