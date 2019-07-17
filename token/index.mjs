@@ -22,6 +22,15 @@ export default class Token {
   static get MINUS() {
     return "-";
   }
+  static get SLASH() {
+    return "/";
+  }
+  static get ASTERISK() {
+    return "*";
+  }
+  static get BANG() {
+    return "!";
+  }
 
   static get COMMA() {
     return ",";

@@ -9,7 +9,9 @@ describe("Lexer", () => {
       let ten = 10;
       let add = func(x, y) {
         x + y;
-      }`;
+      }
+      let result = add(five, ten);
+      !-/*5;`;
       const expected = [
         [Token.LET, "let"],
         [Token.IDENTIFIER, "five"],
@@ -36,6 +38,22 @@ describe("Lexer", () => {
         [Token.IDENTIFIER, "y"],
         [Token.SEMICOLON, ";"],
         [Token.RBRACE, "}"],
+        [Token.LET, "let"],
+        [Token.IDENTIFIER, "result"],
+        [Token.ASSIGN, "="],
+        [Token.IDENTIFIER, "add"],
+        [Token.LPAREN, "("],
+        [Token.IDENTIFIER, "five"],
+        [Token.COMMA, ","],
+        [Token.IDENTIFIER, "ten"],
+        [Token.RPAREN, ")"],
+        [Token.SEMICOLON, ";"],
+        [Token.BANG, "!"],
+        [Token.MINUS, "-"],
+        [Token.SLASH, "/"],
+        [Token.ASTERISK, "*"],
+        [Token.INT, "5"],
+        [Token.SEMICOLON, ";"]
       ];
 
       const lexer = new Lexer(input);

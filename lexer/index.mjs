@@ -25,6 +25,15 @@ export default class Lexer {
       case "-":
         token = new Token(Token.MINUS, this.currentChar);
         break;
+      case "/":
+        token = new Token(Token.SLASH, this.currentChar);
+        break;
+      case "*":
+        token = new Token(Token.ASTERISK, this.currentChar);
+        break;
+      case "!":
+        token = new Token(Token.BANG, this.currentChar);
+        break;
       case ",":
         token = new Token(Token.COMMA, this.currentChar);
         break;
