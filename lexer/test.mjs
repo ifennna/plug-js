@@ -11,7 +11,19 @@ describe("Lexer", () => {
         x + y;
       }
       let result = add(five, ten);
-      !-/*5;`;
+      !-/*5;
+      5 < 10 > 5;
+      if(5 < 10) {
+        return true;
+      } else {
+        return false;
+      }
+      10 == 10;
+      10 != 9;
+      "foobar"
+      "foo bar"
+      [1, 2];`;
+
       const expected = [
         [Token.LET, "let"],
         [Token.IDENTIFIER, "five"],
@@ -53,7 +65,47 @@ describe("Lexer", () => {
         [Token.SLASH, "/"],
         [Token.ASTERISK, "*"],
         [Token.INT, "5"],
-        [Token.SEMICOLON, ";"]
+        [Token.SEMICOLON, ";"],
+        [Token.INT, "5"],
+        [Token.LT, "<"],
+        [Token.INT, "10"],
+        [Token.GT, ">"],
+        [Token.INT, "5"],
+        [Token.SEMICOLON, ";"],
+        [Token.IF, "if"],
+        [Token.LPAREN, "("],
+        [Token.INT, "5"],
+        [Token.LT, "<"],
+        [Token.INT, "10"],
+        [Token.RPAREN, ")"],
+        [Token.LBRACE, "{"],
+        [Token.RETURN, "return"],
+        [Token.TRUE, "true"],
+        [Token.SEMICOLON, ";"],
+        [Token.RBRACE, "}"],
+        [Token.ELSE, "else"],
+        [Token.LBRACE, "{"],
+        [Token.RETURN, "return"],
+        [Token.FALSE, "false"],
+        [Token.SEMICOLON, ";"],
+        [Token.RBRACE, "}"],
+        [Token.INT, "10"],
+        [Token.EQ, "=="],
+        [Token.INT, "10"],
+        [Token.SEMICOLON, ";"],
+        [Token.INT, "10"],
+        [Token.NOT_EQ, "!="],
+        [Token.INT, "9"],
+        [Token.SEMICOLON, ";"],
+        [Token.STRING, "foobar"],
+        [Token.STRING, "foo bar"],
+        [Token.LBRACKET, "["],
+        [Token.INT, "1"],
+        [Token.COMMA, ","],
+        [Token.INT, "2"],
+        [Token.RBRACKET, "]"],
+        [Token.SEMICOLON, ";"],
+        [Token.EOF, ""]
       ];
 
       const lexer = new Lexer(input);

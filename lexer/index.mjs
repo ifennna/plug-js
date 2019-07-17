@@ -17,7 +17,14 @@ export default class Lexer {
 
     switch (this.currentChar) {
       case "=":
-        token = new Token(Token.ASSIGN, this.currentChar);
+        if (this.peekNextChar() === "=") {
+          let character = this.currentChar;
+          this.readChar();
+          let literal = character + this.currentChar;
+          token = new Token(Token.EQ, literal);
+        } else {
+          token = new Token(Token.ASSIGN, this.currentChar);
+        }
         break;
       case "+":
         token = new Token(Token.PLUS, this.currentChar);
@@ -32,10 +39,23 @@ export default class Lexer {
         token = new Token(Token.ASTERISK, this.currentChar);
         break;
       case "!":
-        token = new Token(Token.BANG, this.currentChar);
+        if (this.peekNextChar() === "=") {
+          let character = this.currentChar;
+          this.readChar();
+          let literal = character + this.currentChar;
+          token = new Token(Token.NOT_EQ, literal);
+        } else {
+          token = new Token(Token.BANG, this.currentChar);
+        }
         break;
       case ",":
         token = new Token(Token.COMMA, this.currentChar);
+        break;
+      case "<":
+        token = new Token(Token.LT, this.currentChar);
+        break;
+      case ">":
+        token = new Token(Token.GT, this.currentChar);
         break;
       case "(":
         token = new Token(Token.LPAREN, this.currentChar);
@@ -49,8 +69,17 @@ export default class Lexer {
       case "}":
         token = new Token(Token.RBRACE, this.currentChar);
         break;
+      case "[":
+        token = new Token(Token.LBRACKET, this.currentChar);
+        break;
+      case "]":
+        token = new Token(Token.RBRACKET, this.currentChar);
+        break;
       case ";":
         token = new Token(Token.SEMICOLON, this.currentChar);
+        break;
+      case '"':
+        token = new Token(Token.STRING, this.readString());
         break;
       case 0:
         token = new Token(Token.EOF, "");
@@ -82,6 +111,12 @@ export default class Lexer {
     ) {
       this.readChar();
     }
+  }
+
+  peekNextChar() {
+    return this.readPosition > this.input.length
+      ? 0
+      : this.input.charAt(this.readPosition);
   }
 
   isLetter(character) {
@@ -121,5 +156,18 @@ export default class Lexer {
 
     this.currentPosition = this.readPosition;
     this.readPosition++;
+  }
+
+  readString() {
+    let position = this.currentPosition + 1;
+
+    while (true) {
+      this.readChar();
+      if (this.currentChar === '"' || this.currentChar === 0) {
+        break;
+      }
+    }
+
+    return this.input.slice(position, this.currentPosition);
   }
 }

@@ -12,6 +12,9 @@ export default class Token {
   static get INT() {
     return "INT";
   }
+  static get STRING() {
+    return "STRING";
+  }
 
   static get ASSIGN() {
     return "=";
@@ -30,6 +33,19 @@ export default class Token {
   }
   static get BANG() {
     return "!";
+  }
+  static get EQ() {
+    return "==";
+  }
+  static get NOT_EQ() {
+    return "!=";
+  }
+
+  static get LT() {
+    return "<";
+  }
+  static get GT() {
+    return ">";
   }
 
   static get COMMA() {
@@ -50,12 +66,36 @@ export default class Token {
   static get RBRACE() {
     return "}";
   }
+  static get LBRACKET() {
+    return "[";
+  }
+  static get RBRACKET() {
+    return "]";
+  }
 
   static get FUNCTION() {
     return "FUNCTION";
   }
   static get LET() {
     return "LET";
+  }
+  static get RETURN() {
+    return "RETURN";
+  }
+  static get TRUE() {
+    return "TRUE";
+  }
+  static get FALSE() {
+    return "FALSE";
+  }
+  static get IF() {
+    return "IF";
+  }
+  static get ELSE() {
+    return "ELSE";
+  }
+  static get FOR() {
+    return "FOR";
   }
 
   constructor(type, literal) {
@@ -66,7 +106,13 @@ export default class Token {
   static get keywords() {
     return {
       func: Token.FUNCTION,
-      let: Token.LET
+      let: Token.LET,
+      return: Token.RETURN,
+      if: Token.IF,
+      else: Token.ELSE,
+      true: Token.TRUE,
+      false: Token.FALSE,
+      for: Token.FOR
     };
   }
   static lookUpIdentifier(identifier) {
