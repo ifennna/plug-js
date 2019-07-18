@@ -14,6 +14,16 @@ const assertions = actual => ({
       const message = `fail: ${actual} does not equal ${expected}`;
       throw new Error(message);
     }
+  },
+
+  toImplement: expected => {
+    if (actual instanceof expected) {
+      console.log("pass");
+      return true;
+    } else {
+      const message = `fail: ${actual} is not an instance of ${expected} class`;
+      throw new Error(message);
+    }
   }
 });
 
