@@ -1,5 +1,10 @@
 import Lexer from "../lexer";
-import { ExpressionStatement, Identifier, Program } from "../ast/index";
+import {
+  ExpressionStatement,
+  Identifier,
+  IntegerLiteral,
+  Program
+} from "../ast/index";
 import Token from "../token/index";
 
 const LOWEST = 0;
@@ -18,6 +23,7 @@ export default class Parser {
 
     this.prefixParseFunctions = new Map();
     this.prefixParseFunctions.set(Token.IDENTIFIER, this.parseIdentifier);
+    this.prefixParseFunctions.set(Token.INT, this.parseIntegerLiteral);
 
     this.nextToken(); // set current token
     this.nextToken(); // set peek token
@@ -57,6 +63,16 @@ export default class Parser {
 
   parseIdentifier() {
     return new Identifier(this.currentToken, this.currentToken.literal);
+  }
+
+  parseIntegerLiteral() {
+    const value = Number(this.currentToken.literal);
+
+    if (Number.isNaN(value)) {
+      // throw error
+      return;
+    }
+    return new IntegerLiteral(this.currentToken, value);
   }
 
   nextToken() {

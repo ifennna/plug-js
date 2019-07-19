@@ -67,4 +67,26 @@ class Identifier extends Expression {
   }
 }
 
-export { Program, LetStatement, ExpressionStatement, Identifier };
+class IntegerLiteral extends Expression {
+  constructor(token, value) {
+    super();
+    this.token = token;
+    this.value = value;
+  }
+
+  tokenLiteral() {
+    return this.token.literal;
+  }
+
+  string() {
+    return this.value;
+  }
+}
+
+export {
+  Program,
+  LetStatement,
+  ExpressionStatement,
+  Identifier,
+  IntegerLiteral
+};

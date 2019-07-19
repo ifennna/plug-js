@@ -128,7 +128,6 @@ export default class Lexer {
   }
 
   isDigit(character) {
-    debugger;
     return "0" <= character && character <= "9";
   }
 
