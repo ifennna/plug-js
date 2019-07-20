@@ -81,7 +81,7 @@ export default class Lexer {
       case '"':
         token = new Token(Token.STRING, this.readString());
         break;
-      case 0:
+      case null:
         token = new Token(Token.EOF, "");
         break;
       default:
@@ -128,7 +128,7 @@ export default class Lexer {
   }
 
   isDigit(character) {
-    return "0" <= character && character <= "9";
+    return "0" <= character && character <= "9" && character !== null;
   }
 
   readIdentifier() {
@@ -150,7 +150,7 @@ export default class Lexer {
   readChar() {
     this.currentChar =
       this.readPosition >= this.input.length
-        ? 0
+        ? null
         : this.input.charAt(this.readPosition);
 
     this.currentPosition = this.readPosition;

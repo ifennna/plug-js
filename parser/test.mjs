@@ -1,13 +1,29 @@
 import Parser from "./";
 import Lexer from "../lexer";
 import { describe, it, expect } from "../testHelpers";
-import { ExpressionStatement, Identifier, IntegerLiteral } from "../ast/index";
+import {
+  ExpressionStatement,
+  Identifier,
+  IntegerLiteral,
+  Bool,
+  PrefixExpression
+} from "../ast/index";
 
 const setup = input => {
   const lexer = new Lexer(input);
   const parser = new Parser(lexer);
   const program = parser.parseProgram();
+  checkParserErrors(parser);
   return program;
+};
+
+const checkParserErrors = parser => {
+  const errors = parser.Errors;
+  if (errors.length === 0) return;
+
+  console.log(`Parser has ${errors.length} errors`);
+  errors.forEach(error => console.log(error));
+  throw new Error("Stopped");
 };
 
 const getStatement = program => {
@@ -26,9 +42,27 @@ const testIdentifier = (expression, expected) => {
 const testIntegerLiteral = (expression, expected) => {
   expect(expression).toImplement(IntegerLiteral);
   expect(expression.value).toEqual(expected);
-  debugger;
   expect(expression.tokenLiteral()).toEqual(expected.toString());
   return true;
+};
+
+const testBoolean = (expression, expected) => {
+  expect(expression).toImplement(Bool);
+  expect(expression.value).toEqual(expected);
+  expect(expression.tokenLiteral()).toEqual(`${expected}`);
+  return true;
+};
+
+const testLiteralExpression = (expression, expected) => {
+  switch (typeof expected) {
+    case "string":
+      return testIdentifier(expression, expected);
+    case "number":
+      return testIntegerLiteral(expression, expected);
+    case "boolean":
+      return testBoolean(expression, expected);
+  }
+  return false;
 };
 
 describe("Parser", () => {
@@ -48,5 +82,36 @@ describe("Parser", () => {
     expect(program.statements.length).toEqual(1);
     const statement = getStatement(program);
     expect(testIntegerLiteral(statement.expression, 5)).toEqual(true);
+  });
+
+  it("should parse boolean expressions", () => {
+    const input = "true";
+    debugger;
+    const program = setup(input);
+    expect(program.statements.length).toEqual(1);
+    const statement = getStatement(program);
+    expect(testBoolean(statement.expression, true)).toEqual(true);
+  });
+
+  it("should parse prefix expressions", () => {
+    const testCases = [
+      { input: "!5", operator: "!", value: 5 },
+      { input: "-15", operator: "-", value: 15 },
+      { input: "!false", operator: "!", value: false },
+      { input: "!true", operator: "!", value: true }
+    ];
+
+    testCases.forEach(testCase => {
+      const program = setup(testCase.input);
+      expect(program.statements.length).toEqual(1);
+      const statement = getStatement(program);
+      const expression = statement.expression;
+
+      expect(expression).toImplement(PrefixExpression);
+      expect(expression.operator).toEqual(testCase.operator);
+      expect(testLiteralExpression(expression.right, testCase.value)).toEqual(
+        true
+      );
+    });
   });
 });

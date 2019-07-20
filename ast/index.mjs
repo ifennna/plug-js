@@ -83,10 +83,45 @@ class IntegerLiteral extends Expression {
   }
 }
 
+class Bool extends Expression {
+  constructor(token, value) {
+    super();
+    this.token = token;
+    this.value = value;
+  }
+
+  tokenLiteral() {
+    return this.token.literal;
+  }
+
+  string() {
+    return this.value;
+  }
+}
+
+class PrefixExpression extends Expression {
+  constructor(token, operator, rightExpression) {
+    super();
+    this.token = token;
+    this.operator = operator;
+    this.right = rightExpression;
+  }
+
+  tokenLiteral() {
+    return this.token.literal;
+  }
+
+  string() {
+    return `(${this.operator}${this.right.string()})`;
+  }
+}
+
 export {
   Program,
   LetStatement,
   ExpressionStatement,
   Identifier,
-  IntegerLiteral
+  IntegerLiteral,
+  Bool,
+  PrefixExpression
 };
