@@ -39,6 +39,7 @@ export default class Parser {
     this.prefixParseFunctions.set(Token.INT, this.parseIntegerLiteral);
     this.prefixParseFunctions.set(Token.TRUE, this.parseBoolean);
     this.prefixParseFunctions.set(Token.FALSE, this.parseBoolean);
+    this.prefixParseFunctions.set(Token.LPAREN, this.parseGroupedExpression);
     this.prefixParseFunctions.set(Token.BANG, this.parsePrefixExpression);
     this.prefixParseFunctions.set(Token.MINUS, this.parsePrefixExpression);
 
@@ -121,6 +122,16 @@ export default class Parser {
     return new Bool(this.currentToken, this.currentTokenIs(Token.TRUE));
   }
 
+  parseGroupedExpression() {
+    this.nextToken();
+    const expression = this.parseExpression(LOWEST);
+    if (!this.expectPeek(Token.RPAREN)) {
+      this.throwPeekError(Token.RPAREN);
+      return;
+    }
+    return expression;
+  }
+
   parsePrefixExpression() {
     const token = this.currentToken;
     const operator = token.literal;
@@ -154,7 +165,7 @@ export default class Parser {
     return this.peekToken.type === token;
   }
 
-  expectToken(token) {
+  expectPeek(token) {
     if (this.peekTokenIs(token)) {
       this.nextToken();
       return true;

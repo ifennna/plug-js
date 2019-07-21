@@ -15,7 +15,11 @@ class Program extends Node {
   tokenLiteral() {
     return this.statements.length > 0 ? this.statements[0].tokenLiteral() : "";
   }
-  string() {}
+  string() {
+    let string = "";
+    this.statements.forEach(statement => (string += statement.string()));
+    return string;
+  }
 }
 
 class LetStatement extends Statement {
@@ -126,7 +130,7 @@ class InfixExpression extends Expression {
   }
 
   string() {
-    return `(${this.left.string()}${this.operator}${this.right.string()})`;
+    return `(${this.left.string()} ${this.operator} ${this.right.string()})`;
   }
 }
 
