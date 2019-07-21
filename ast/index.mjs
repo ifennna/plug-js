@@ -5,7 +5,12 @@ class Node {
 
 class Statement extends Node {}
 
-class Expression extends Node {}
+class Expression extends Node {
+  constructor(token) {
+    super();
+    this.token = token;
+  }
+}
 
 class Program extends Node {
   constructor() {
@@ -71,10 +76,27 @@ class ExpressionStatement extends Statement {
   }
 }
 
-class Identifier extends Expression {
-  constructor(token, value) {
+class BlockStatement extends Statement {
+  constructor(token, statements) {
     super();
     this.token = token;
+    this.statements = statements;
+  }
+
+  tokenLiteral() {
+    return this.token.literal;
+  }
+
+  string() {
+    let string = "";
+    this.statements.forEach(statement => (string += statement.string()));
+    return string;
+  }
+}
+
+class Identifier extends Expression {
+  constructor(token, value) {
+    super(token);
     this.value = value;
   }
 
@@ -89,8 +111,7 @@ class Identifier extends Expression {
 
 class IntegerLiteral extends Expression {
   constructor(token, value) {
-    super();
-    this.token = token;
+    super(token);
     this.value = value;
   }
 
@@ -105,8 +126,7 @@ class IntegerLiteral extends Expression {
 
 class Bool extends Expression {
   constructor(token, value) {
-    super();
-    this.token = token;
+    super(token);
     this.value = value;
   }
 
@@ -121,8 +141,7 @@ class Bool extends Expression {
 
 class PrefixExpression extends Expression {
   constructor(token, operator, rightExpression) {
-    super();
-    this.token = token;
+    super(token);
     this.operator = operator;
     this.right = rightExpression;
   }
@@ -138,8 +157,7 @@ class PrefixExpression extends Expression {
 
 class InfixExpression extends Expression {
   constructor(token, leftExpression, operator, rightExpression) {
-    super();
-    this.token = token;
+    super(token);
     this.left = leftExpression;
     this.operator = operator;
     this.right = rightExpression;
@@ -154,14 +172,36 @@ class InfixExpression extends Expression {
   }
 }
 
+class IfExpression extends Expression {
+  constructor(token, condition, consequence, alternative) {
+    super(token);
+    this.condition = condition;
+    this.consequence = consequence;
+    this.alternative = alternative;
+  }
+
+  tokenLiteral() {
+    return this.token.literal;
+  }
+
+  string() {
+    return `if ${this.condition.string()} {${this.consequence.string()}}` +
+      this.alternative
+      ? `else {${this.alternative}}`
+      : "";
+  }
+}
+
 export {
   Program,
   LetStatement,
   ReturnStatement,
   ExpressionStatement,
+  BlockStatement,
   Identifier,
   IntegerLiteral,
   Bool,
   PrefixExpression,
-  InfixExpression
+  InfixExpression,
+  IfExpression
 };

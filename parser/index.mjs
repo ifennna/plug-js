@@ -1,7 +1,9 @@
 import {
+  BlockStatement,
   Bool,
   ExpressionStatement,
   Identifier,
+  IfExpression,
   InfixExpression,
   IntegerLiteral,
   LetStatement,
@@ -44,6 +46,7 @@ export default class Parser {
     this.prefixParseFunctions.set(Token.LPAREN, this.parseGroupedExpression);
     this.prefixParseFunctions.set(Token.BANG, this.parsePrefixExpression);
     this.prefixParseFunctions.set(Token.MINUS, this.parsePrefixExpression);
+    this.prefixParseFunctions.set(Token.IF, this.parseIfExpression);
 
     this.infixParseFunctions = new Map();
     this.infixParseFunctions.set(Token.PLUS, this.parseInfixExpression);
@@ -123,6 +126,25 @@ export default class Parser {
     return statement;
   }
 
+  parseBlockStatement() {
+    const token = this.currentToken;
+    const statements = [];
+
+    this.nextToken();
+
+    while (
+      !this.currentTokenIs(Token.RBRACE) &&
+      !this.currentTokenIs(Token.EOF)
+    ) {
+      debugger;
+      const statement = this.parseStatement();
+      if (statement) statements.push(statement);
+      this.nextToken();
+    }
+
+    return new BlockStatement(token, statements);
+  }
+
   parseExpression(precedence) {
     const prefix = this.prefixParseFunctions.get(this.currentToken.type);
     if (!prefix) {
@@ -192,6 +214,40 @@ export default class Parser {
     const right = this.parseExpression(precedence);
 
     return new InfixExpression(token, left, operator, right);
+  }
+
+  parseIfExpression() {
+    const token = this.currentToken;
+    if (!this.expectPeek(Token.LPAREN)) {
+      this.throwPeekError(Token.LPAREN);
+      return;
+    }
+
+    this.nextToken();
+    const condition = this.parseExpression(LOWEST);
+
+    if (!this.expectPeek(Token.RPAREN)) {
+      this.throwPeekError(Token.RPAREN);
+      return;
+    }
+    if (!this.expectPeek(Token.LBRACE)) {
+      this.throwPeekError(Token.LBRACE);
+      return;
+    }
+
+    const consequence = this.parseBlockStatement();
+    let alternative;
+
+    if (this.peekTokenIs(Token.ELSE)) {
+      this.nextToken();
+      if (!this.expectPeek(Token.LBRACE)) {
+        this.throwPeekError(Token.LBRACE);
+        return;
+      }
+      alternative = this.parseBlockStatement();
+    }
+
+    return new IfExpression(token, condition, consequence, alternative);
   }
 
   nextToken() {

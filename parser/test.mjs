@@ -9,7 +9,8 @@ import {
   PrefixExpression,
   InfixExpression,
   ReturnStatement,
-  LetStatement
+  LetStatement,
+  IfExpression
 } from "../ast/index";
 
 const setup = input => {
@@ -189,6 +190,48 @@ describe("Parser", () => {
       expect(statement.name.value).toEqual(testCase.expectedIdentifier);
       expect(statement.value.value).toEqual(testCase.expectedValue);
     });
+  });
+
+  it("should parse 'if' expressions", () => {
+    const input = "if (x > y) { x }";
+    const program = setup(input);
+    expect(program.statements.length).toEqual(1);
+    const statement = getStatement(program);
+
+    const expression = statement.expression;
+    expect(expression).toImplement(IfExpression);
+
+    expect(testInfixExpression(expression.condition, "x", ">", "y")).toEqual(
+      true
+    );
+    expect(expression.consequence.statements.length).toEqual(1);
+    const consequence = expression.consequence.statements[0];
+    expect(consequence).toImplement(ExpressionStatement);
+    expect(testIdentifier(consequence.expression, "x")).toEqual(true);
+    expect(consequence.alternative).toEqual(undefined);
+  });
+
+  it("should parse 'if-else' expressions", () => {
+    const input = "if (x < y) { x } else { y }";
+    const program = setup(input);
+    expect(program.statements.length).toEqual(1);
+    const statement = getStatement(program);
+
+    const expression = statement.expression;
+    expect(expression).toImplement(IfExpression);
+
+    expect(testInfixExpression(expression.condition, "x", "<", "y")).toEqual(
+      true
+    );
+    expect(expression.consequence.statements.length).toEqual(1);
+    const consequence = expression.consequence.statements[0];
+    expect(consequence).toImplement(ExpressionStatement);
+    expect(testIdentifier(consequence.expression, "x")).toEqual(true);
+
+    expect(expression.alternative.statements.length).toEqual(1);
+    const alternative = expression.alternative.statements[0];
+    expect(alternative).toImplement(ExpressionStatement);
+    expect(testIdentifier(alternative.expression, "y")).toEqual(true);
   });
 });
 

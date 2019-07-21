@@ -8,7 +8,7 @@ const it = (message, func) => describe(`    ${message}`, func);
 const assertions = actual => ({
   toEqual: expected => {
     if (actual === expected) {
-      console.log("pass");
+      console.log("        pass");
       return true;
     } else {
       const message = `fail: ${actual} does not equal ${expected}`;
@@ -18,7 +18,7 @@ const assertions = actual => ({
 
   toImplement: expected => {
     if (actual instanceof expected) {
-      console.log("pass");
+      console.log("        pass");
       return true;
     } else {
       const message = `fail: ${actual} is not an instance of ${expected} class`;
