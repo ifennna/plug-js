@@ -22,6 +22,23 @@ class Program extends Node {
   }
 }
 
+class LetStatement extends Statement {
+  constructor(token, name, value) {
+    super();
+    this.token = token;
+    this.name = name;
+    this.value = value;
+  }
+
+  tokenLiteral() {
+    return this.token.literal;
+  }
+
+  string() {
+    return `${this.token.literal} ${this.name} = ${this.value};`;
+  }
+}
+
 class ReturnStatement extends Statement {
   constructor(token, returnValue) {
     super();
@@ -139,6 +156,7 @@ class InfixExpression extends Expression {
 
 export {
   Program,
+  LetStatement,
   ReturnStatement,
   ExpressionStatement,
   Identifier,

@@ -8,7 +8,8 @@ import {
   Bool,
   PrefixExpression,
   InfixExpression,
-  ReturnStatement
+  ReturnStatement,
+  LetStatement
 } from "../ast/index";
 
 const setup = input => {
@@ -169,6 +170,24 @@ describe("Parser", () => {
       expect(
         testLiteralExpression(statement.returnValue, testCase.expectedValue)
       ).toEqual(true);
+    });
+  });
+
+  it("should parse let statements", () => {
+    const testCases = [
+      { input: "let x = 5", expectedIdentifier: "x", expectedValue: 5 },
+      { input: "let y = true", expectedIdentifier: "y", expectedValue: true },
+      { input: "let foo = y", expectedIdentifier: "foo", expectedValue: "y" }
+    ];
+
+    testCases.forEach(testCase => {
+      const program = setup(testCase.input);
+      expect(program.statements.length).toEqual(1);
+      const statement = program.statements[0];
+
+      expect(statement).toImplement(LetStatement);
+      expect(statement.name.value).toEqual(testCase.expectedIdentifier);
+      expect(statement.value.value).toEqual(testCase.expectedValue);
     });
   });
 });

@@ -4,6 +4,7 @@ import {
   Identifier,
   InfixExpression,
   IntegerLiteral,
+  LetStatement,
   PrefixExpression,
   Program,
   ReturnStatement
@@ -72,11 +73,37 @@ export default class Parser {
 
   parseStatement() {
     switch (this.currentToken.type) {
+      case Token.LET:
+        return this.parseLetStatement();
       case Token.RETURN:
         return this.parseReturnStatement();
       default:
         return this.parseExpressionStatement();
     }
+  }
+
+  parseLetStatement() {
+    const token = this.currentToken;
+    if (!this.expectPeek(Token.IDENTIFIER)) {
+      this.throwPeekError(Token.IDENTIFIER);
+      return;
+    }
+
+    const name = new Identifier(this.currentToken, this.currentToken.literal);
+
+    if (!this.expectPeek(Token.ASSIGN)) {
+      this.throwPeekError(Token.ASSIGN);
+      return;
+    }
+
+    this.nextToken();
+    const value = this.parseExpression(LOWEST);
+
+    if (this.peekTokenIs(Token.SEMICOLON)) {
+      this.nextToken();
+    }
+
+    return new LetStatement(token, name, value);
   }
 
   parseReturnStatement() {
