@@ -7,7 +7,8 @@ import {
   IntegerLiteral,
   Bool,
   PrefixExpression,
-  InfixExpression
+  InfixExpression,
+  ReturnStatement
 } from "../ast/index";
 
 const setup = input => {
@@ -147,6 +148,26 @@ describe("Parser", () => {
           testCase.operator,
           testCase.rightValue
         )
+      ).toEqual(true);
+    });
+  });
+
+  it("should parse return statements", () => {
+    const testCases = [
+      { input: "return 5;", expectedValue: 5 },
+      { input: "return true;", expectedValue: true },
+      { input: "return foobar;", expectedValue: "foobar" }
+    ];
+
+    testCases.forEach(testCase => {
+      const program = setup(testCase.input);
+      expect(program.statements.length).toEqual(1);
+      const statement = program.statements[0];
+
+      expect(statement).toImplement(ReturnStatement);
+      expect(statement.tokenLiteral()).toEqual("return");
+      expect(
+        testLiteralExpression(statement.returnValue, testCase.expectedValue)
       ).toEqual(true);
     });
   });

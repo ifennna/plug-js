@@ -5,7 +5,8 @@ import {
   InfixExpression,
   IntegerLiteral,
   PrefixExpression,
-  Program
+  Program,
+  ReturnStatement
 } from "../ast/index";
 import Token from "../token/index";
 
@@ -70,7 +71,21 @@ export default class Parser {
   }
 
   parseStatement() {
-    return this.parseExpressionStatement();
+    switch (this.currentToken.type) {
+      case Token.RETURN:
+        return this.parseReturnStatement();
+      default:
+        return this.parseExpressionStatement();
+    }
+  }
+
+  parseReturnStatement() {
+    const token = this.currentToken;
+    this.nextToken();
+    const returnValue = this.parseExpression(LOWEST);
+    if (this.peekTokenIs(Token.SEMICOLON)) this.nextToken();
+
+    return new ReturnStatement(token, returnValue);
   }
 
   parseExpressionStatement() {
