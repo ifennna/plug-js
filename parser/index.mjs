@@ -2,6 +2,7 @@ import {
   Bool,
   ExpressionStatement,
   Identifier,
+  InfixExpression,
   IntegerLiteral,
   PrefixExpression,
   Program
@@ -17,6 +18,13 @@ const PREFIX = 5;
 
 const precedenceTable = new Map();
 precedenceTable.set(Token.EQ, EQUALS);
+precedenceTable.set(Token.NOT_EQ, EQUALS);
+precedenceTable.set(Token.LT, LESSGREATER);
+precedenceTable.set(Token.GT, LESSGREATER);
+precedenceTable.set(Token.PLUS, SUM);
+precedenceTable.set(Token.MINUS, SUM);
+precedenceTable.set(Token.SLASH, PRODUCT);
+precedenceTable.set(Token.ASTERISK, PRODUCT);
 
 export default class Parser {
   constructor(lexer) {
@@ -33,6 +41,16 @@ export default class Parser {
     this.prefixParseFunctions.set(Token.FALSE, this.parseBoolean);
     this.prefixParseFunctions.set(Token.BANG, this.parsePrefixExpression);
     this.prefixParseFunctions.set(Token.MINUS, this.parsePrefixExpression);
+
+    this.infixParseFunctions = new Map();
+    this.infixParseFunctions.set(Token.PLUS, this.parseInfixExpression);
+    this.infixParseFunctions.set(Token.MINUS, this.parseInfixExpression);
+    this.infixParseFunctions.set(Token.SLASH, this.parseInfixExpression);
+    this.infixParseFunctions.set(Token.ASTERISK, this.parseInfixExpression);
+    this.infixParseFunctions.set(Token.EQ, this.parseInfixExpression);
+    this.infixParseFunctions.set(Token.NOT_EQ, this.parseInfixExpression);
+    this.infixParseFunctions.set(Token.LT, this.parseInfixExpression);
+    this.infixParseFunctions.set(Token.GT, this.parseInfixExpression);
 
     this.nextToken(); // set current token
     this.nextToken(); // set peek token
@@ -54,21 +72,35 @@ export default class Parser {
     return this.parseExpressionStatement();
   }
 
+  parseExpressionStatement() {
+    const expression = this.parseExpression(LOWEST);
+    const statement = new ExpressionStatement(this.currentToken, expression);
+    if (this.peekTokenIs(Token.SEMICOLON)) this.nextToken();
+
+    return statement;
+  }
+
   parseExpression(precedence) {
     const prefix = this.prefixParseFunctions.get(this.currentToken.type);
     if (!prefix) {
       this.throwNoParseFunctionError(this.currentToken);
       return;
     }
-    return prefix.apply(this);
-  }
+    let leftExpression = prefix.call(this);
 
-  parseExpressionStatement() {
-    const expression = this.parseExpression();
-    const statement = new ExpressionStatement(this.currentToken, expression);
-    if (this.peekTokenIs(Token.SEMICOLON)) this.nextToken();
+    // move through line until we hit a lower precedence operator
+    // then we return so the lower precedence operation occurs higher up in the tree
+    while (
+      !this.peekTokenIs(Token.SEMICOLON) &&
+      precedence < this.peekPrecedence
+    ) {
+      const infix = this.infixParseFunctions.get(this.peekToken.type);
+      if (!infix) return leftExpression;
+      this.nextToken();
+      leftExpression = infix.call(this, leftExpression);
+    }
 
-    return statement;
+    return leftExpression;
   }
 
   parseIdentifier() {
@@ -85,6 +117,10 @@ export default class Parser {
     return new IntegerLiteral(this.currentToken, value);
   }
 
+  parseBoolean() {
+    return new Bool(this.currentToken, this.currentTokenIs(Token.TRUE));
+  }
+
   parsePrefixExpression() {
     const token = this.currentToken;
     const operator = token.literal;
@@ -93,8 +129,16 @@ export default class Parser {
     return new PrefixExpression(token, operator, rightExpression);
   }
 
-  parseBoolean() {
-    return new Bool(this.currentToken, this.currentTokenIs(Token.TRUE));
+  parseInfixExpression(left) {
+    const precedence = this.currentPrecedence;
+    const token = this.currentToken;
+    const operator = token.literal;
+
+    this.nextToken();
+
+    const right = this.parseExpression(precedence);
+
+    return new InfixExpression(token, left, operator, right);
   }
 
   nextToken() {
@@ -118,6 +162,18 @@ export default class Parser {
       this.throwPeekError(token);
       return false;
     }
+  }
+
+  get peekPrecedence() {
+    return precedenceTable.has(this.peekToken.type)
+      ? precedenceTable.get(this.peekToken.type)
+      : LOWEST;
+  }
+
+  get currentPrecedence() {
+    return precedenceTable.has(this.currentToken.type)
+      ? precedenceTable.get(this.currentToken.type)
+      : LOWEST;
   }
 
   throwPeekError(token) {

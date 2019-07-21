@@ -3,13 +3,9 @@ class Node {
   string() {}
 }
 
-class Statement extends Node {
-  statementNode() {}
-}
+class Statement extends Node {}
 
-class Expression extends Node {
-  expressionNode() {}
-}
+class Expression extends Node {}
 
 class Program extends Node {
   constructor() {
@@ -116,6 +112,24 @@ class PrefixExpression extends Expression {
   }
 }
 
+class InfixExpression extends Expression {
+  constructor(token, leftExpression, operator, rightExpression) {
+    super();
+    this.token = token;
+    this.left = leftExpression;
+    this.operator = operator;
+    this.right = rightExpression;
+  }
+
+  tokenLiteral() {
+    return this.token.literal;
+  }
+
+  string() {
+    return `(${this.left.string()}${this.operator}${this.right.string()})`;
+  }
+}
+
 export {
   Program,
   LetStatement,
@@ -123,5 +137,6 @@ export {
   Identifier,
   IntegerLiteral,
   Bool,
-  PrefixExpression
+  PrefixExpression,
+  InfixExpression
 };

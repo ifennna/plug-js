@@ -6,7 +6,8 @@ import {
   Identifier,
   IntegerLiteral,
   Bool,
-  PrefixExpression
+  PrefixExpression,
+  InfixExpression
 } from "../ast/index";
 
 const setup = input => {
@@ -65,6 +66,14 @@ const testLiteralExpression = (expression, expected) => {
   return false;
 };
 
+const testInfixExpression = (expression, left, operator, right) => {
+  expect(expression).toImplement(InfixExpression);
+  expect(testLiteralExpression(expression.left, left)).toEqual(true);
+  expect(expression.operator).toEqual(operator);
+  expect(testLiteralExpression(expression.right, right)).toEqual(true);
+  return true;
+};
+
 describe("Parser", () => {
   it("should parse identifier expressions", () => {
     const input = "foobar;";
@@ -86,8 +95,8 @@ describe("Parser", () => {
 
   it("should parse boolean expressions", () => {
     const input = "true";
-    debugger;
     const program = setup(input);
+
     expect(program.statements.length).toEqual(1);
     const statement = getStatement(program);
     expect(testBoolean(statement.expression, true)).toEqual(true);
@@ -112,6 +121,33 @@ describe("Parser", () => {
       expect(testLiteralExpression(expression.right, testCase.value)).toEqual(
         true
       );
+    });
+  });
+
+  it("should parse infix expressions", () => {
+    const testCases = [
+      { input: "5 + 5;", leftValue: 5, operator: "+", rightValue: 5 },
+      { input: "5 - 5;", leftValue: 5, operator: "-", rightValue: 5 },
+      { input: "5 * 5;", leftValue: 5, operator: "*", rightValue: 5 },
+      { input: "5 / 5;", leftValue: 5, operator: "/", rightValue: 5 },
+      { input: "5 > 5;", leftValue: 5, operator: ">", rightValue: 5 },
+      { input: "5 < 5;", leftValue: 5, operator: "<", rightValue: 5 },
+      { input: "5 == 5;", leftValue: 5, operator: "==", rightValue: 5 },
+      { input: "5 != 5;", leftValue: 5, operator: "!=", rightValue: 5 }
+    ];
+
+    testCases.forEach(testCase => {
+      const program = setup(testCase.input);
+      expect(program.statements.length).toEqual(1);
+      const statement = getStatement(program);
+      expect(
+        testInfixExpression(
+          statement.expression,
+          testCase.leftValue,
+          testCase.operator,
+          testCase.rightValue
+        )
+      ).toEqual(true);
     });
   });
 });
