@@ -124,6 +124,21 @@ class IntegerLiteral extends Expression {
   }
 }
 
+class StringLiteral extends Expression {
+  constructor(token, value) {
+    super(token);
+    this.value = value;
+  }
+
+  tokenLiteral() {
+    return this.token.literal;
+  }
+
+  string() {
+    return this.value;
+  }
+}
+
 class Bool extends Expression {
   constructor(token, value) {
     super(token);
@@ -200,6 +215,7 @@ export {
   BlockStatement,
   Identifier,
   IntegerLiteral,
+  StringLiteral,
   Bool,
   PrefixExpression,
   InfixExpression,

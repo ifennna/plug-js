@@ -10,7 +10,8 @@ import {
   InfixExpression,
   ReturnStatement,
   LetStatement,
-  IfExpression
+  IfExpression,
+  StringLiteral
 } from "../ast/index";
 
 const setup = input => {
@@ -103,6 +104,16 @@ describe("Parser", () => {
     expect(program.statements.length).toEqual(1);
     const statement = getStatement(program);
     expect(testBoolean(statement.expression, true)).toEqual(true);
+  });
+
+  it("should parse string literals", () => {
+    const input = `"hello world"`;
+    const program = setup(input);
+    const statement = getStatement(program);
+    const literal = statement.expression;
+
+    expect(literal).toImplement(StringLiteral);
+    expect(literal.value).toEqual("hello world");
   });
 
   it("should parse prefix expressions", () => {

@@ -9,7 +9,8 @@ import {
   LetStatement,
   PrefixExpression,
   Program,
-  ReturnStatement
+  ReturnStatement,
+  StringLiteral
 } from "../ast/index";
 import Token from "../token/index";
 
@@ -41,6 +42,7 @@ export default class Parser {
     this.prefixParseFunctions = new Map();
     this.prefixParseFunctions.set(Token.IDENTIFIER, this.parseIdentifier);
     this.prefixParseFunctions.set(Token.INT, this.parseIntegerLiteral);
+    this.prefixParseFunctions.set(Token.STRING, this.parseStringLiteral);
     this.prefixParseFunctions.set(Token.TRUE, this.parseBoolean);
     this.prefixParseFunctions.set(Token.FALSE, this.parseBoolean);
     this.prefixParseFunctions.set(Token.LPAREN, this.parseGroupedExpression);
@@ -180,6 +182,10 @@ export default class Parser {
       return;
     }
     return new IntegerLiteral(this.currentToken, value);
+  }
+
+  parseStringLiteral() {
+    return new StringLiteral(this.currentToken, this.currentToken.literal);
   }
 
   parseBoolean() {
