@@ -2,6 +2,7 @@ import {
   BlockStatement,
   Bool,
   ExpressionStatement,
+  FunctionLiteral,
   Identifier,
   IfExpression,
   InfixExpression,
@@ -49,6 +50,7 @@ export default class Parser {
     this.prefixParseFunctions.set(Token.BANG, this.parsePrefixExpression);
     this.prefixParseFunctions.set(Token.MINUS, this.parsePrefixExpression);
     this.prefixParseFunctions.set(Token.IF, this.parseIfExpression);
+    this.prefixParseFunctions.set(Token.FUNCTION, this.parseFunctionLiteral);
 
     this.infixParseFunctions = new Map();
     this.infixParseFunctions.set(Token.PLUS, this.parseInfixExpression);
@@ -138,7 +140,6 @@ export default class Parser {
       !this.currentTokenIs(Token.RBRACE) &&
       !this.currentTokenIs(Token.EOF)
     ) {
-      debugger;
       const statement = this.parseStatement();
       if (statement) statements.push(statement);
       this.nextToken();
@@ -254,6 +255,60 @@ export default class Parser {
     }
 
     return new IfExpression(token, condition, consequence, alternative);
+  }
+
+  parseFunctionLiteral() {
+    const token = this.currentToken;
+
+    if (!this.expectPeek(Token.LPAREN)) {
+      this.throwPeekError(Token.LPAREN);
+      return;
+    }
+    const parameters = this.parseFunctionParameters();
+
+    if (!this.expectPeek(Token.LBRACE)) {
+      this.throwPeekError(Token.LBRACE);
+      return;
+    }
+
+    const body = this.parseBlockStatement();
+
+    return new FunctionLiteral(token, parameters, body);
+  }
+
+  parseFunctionParameters() {
+    let identifiers = [];
+
+    if (this.peekTokenIs(Token.RPAREN)) {
+      this.nextToken();
+      return identifiers;
+    }
+    this.nextToken();
+
+    let identifier = new Identifier(
+      this.currentToken,
+      this.currentToken.literal
+    );
+    identifiers.push(identifier);
+
+    debugger;
+    while (this.peekTokenIs(Token.COMMA)) {
+      this.nextToken(); // move to the comma
+      this.nextToken(); // move to the next parameter
+
+      let identifier = new Identifier(
+        this.currentToken,
+        this.currentToken.literal
+      );
+      identifiers.push(identifier);
+    }
+
+    if (!this.expectPeek(Token.RPAREN)) {
+      this.throwPeekError(Token.RPAREN);
+      return;
+    }
+
+    return identifiers;
   }
 
   nextToken() {

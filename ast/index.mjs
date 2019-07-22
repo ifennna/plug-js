@@ -207,6 +207,24 @@ class IfExpression extends Expression {
   }
 }
 
+class FunctionLiteral extends Expression {
+  constructor(token, parameters, body) {
+    super(token);
+    this.parameters = parameters;
+    this.body = body;
+  }
+
+  tokenLiteral() {
+    return this.token.literal;
+  }
+
+  string() {
+    return `func (${this.parameters.join(", ")}) {
+      ${this.body.string()}
+    }`;
+  }
+}
+
 export {
   Program,
   LetStatement,
@@ -219,5 +237,6 @@ export {
   Bool,
   PrefixExpression,
   InfixExpression,
-  IfExpression
+  IfExpression,
+  FunctionLiteral
 };

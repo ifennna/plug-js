@@ -11,7 +11,8 @@ import {
   ReturnStatement,
   LetStatement,
   IfExpression,
-  StringLiteral
+  StringLiteral,
+  FunctionLiteral
 } from "../ast/index";
 
 const setup = input => {
@@ -243,6 +244,23 @@ describe("Parser", () => {
     const alternative = expression.alternative.statements[0];
     expect(alternative).toImplement(ExpressionStatement);
     expect(testIdentifier(alternative.expression, "y")).toEqual(true);
+  });
+
+  it("should parse function literals", () => {
+    const input = "func(a, b) { a * b; }";
+    const program = setup(input);
+    const statement = getStatement(program);
+    const func = statement.expression;
+
+    expect(func).toImplement(FunctionLiteral);
+    expect(func.parameters.length).toEqual(2);
+    testLiteralExpression(func.parameters[0], "a");
+    testLiteralExpression(func.parameters[1], "b");
+
+    expect(func.body.statements.length).toEqual(1);
+    const body = func.body.statements[0];
+    expect(body).toImplement(ExpressionStatement);
+    testInfixExpression(body.expression, "a", "*", "b");
   });
 });
 
