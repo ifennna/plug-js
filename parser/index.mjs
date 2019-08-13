@@ -4,6 +4,7 @@ import {
   Bool,
   CallExpression,
   ExpressionStatement,
+  ForStatement,
   FunctionLiteral,
   Identifier,
   IfExpression,
@@ -94,6 +95,8 @@ export default class Parser {
         return this.parseLetStatement();
       case Token.RETURN:
         return this.parseReturnStatement();
+      case Token.FOR:
+        return this.parseForLoop();
       default:
         return this.parseExpressionStatement();
     }
@@ -130,6 +133,29 @@ export default class Parser {
     if (this.peekTokenIs(Token.SEMICOLON)) this.nextToken();
 
     return new ReturnStatement(token, returnValue);
+  }
+
+  parseForLoop() {
+    const token = this.currentToken;
+    this.nextToken();
+
+    const index = new Identifier(this.currentToken, this.currentToken.literal);
+    if (!this.expectPeek(Token.ASSIGN)) {
+      this.throwPeekError(Token.ASSIGN);
+      return;
+    }
+    this.nextToken();
+
+    const range = this.parseExpression(LOWEST);
+
+    if (!this.expectPeek(Token.LBRACE)) {
+      this.throwPeekError(Token.LBRACE);
+      return;
+    }
+
+    const body = this.parseBlockStatement();
+
+    return new ForStatement(token, index, range, body);
   }
 
   parseExpressionStatement() {
@@ -355,7 +381,7 @@ export default class Parser {
   }
 
   parseIndexExpression(left) {
-    const token = this.token;
+    const token = this.currentToken;
     this.nextToken();
     const index = this.parseExpression(LOWEST);
 

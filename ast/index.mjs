@@ -1,14 +1,21 @@
 class Node {
+  constructor(token) {
+    this.token = token;
+  }
+
   tokenLiteral() {}
   string() {}
 }
 
-class Statement extends Node {}
+class Statement extends Node {
+  constructor(token) {
+    super(token);
+  }
+}
 
 class Expression extends Node {
   constructor(token) {
-    super();
-    this.token = token;
+    super(token);
   }
 }
 
@@ -29,8 +36,7 @@ class Program extends Node {
 
 class LetStatement extends Statement {
   constructor(token, name, value) {
-    super();
-    this.token = token;
+    super(token);
     this.name = name;
     this.value = value;
   }
@@ -46,8 +52,7 @@ class LetStatement extends Statement {
 
 class ReturnStatement extends Statement {
   constructor(token, returnValue) {
-    super();
-    this.token = token;
+    super(token);
     this.returnValue = returnValue;
   }
 
@@ -57,6 +62,23 @@ class ReturnStatement extends Statement {
 
   string() {
     return `${this.token.literal} ${this.returnValue};`;
+  }
+}
+
+class ForStatement extends Statement {
+  constructor(token, index, range, body) {
+    super(token);
+    this.index = index;
+    this.range = range;
+    this.body = body;
+  }
+
+  tokenLiteral() {
+    return this.token.literal;
+  }
+
+  string() {
+    return `${this.tokenLiteral()} ${this.index.string()} in ${this.range.string()} {${this.body.string()}}`;
   }
 }
 
@@ -278,6 +300,7 @@ class IndexExpression extends Expression {
 
 export {
   Program,
+  ForStatement,
   LetStatement,
   ReturnStatement,
   ExpressionStatement,

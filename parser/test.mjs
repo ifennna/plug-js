@@ -15,7 +15,8 @@ import {
   FunctionLiteral,
   CallExpression,
   ArrayLiteral,
-  IndexExpression
+  IndexExpression,
+  ForStatement
 } from "../ast/index";
 
 const setup = input => {
@@ -80,6 +81,18 @@ const testInfixExpression = (expression, left, operator, right) => {
   expect(expression.operator).toEqual(operator);
   expect(testLiteralExpression(expression.right, right)).toEqual(true);
   return true;
+};
+
+const testForStatement = statement => {
+  expect(statement.tokenLiteral()).toEqual("for");
+  testIdentifier(statement.range.func, "range");
+  expect(statement.range.callArguments.length).toEqual(1);
+  testLiteralExpression(statement.range.callArguments[0], 6);
+
+  testIdentifier(statement.index, "i");
+
+  const body = getStatement(statement.body);
+  testIdentifier(body.expression, "x");
 };
 
 describe("Parser", () => {
@@ -305,6 +318,15 @@ describe("Parser", () => {
 
     testIdentifier(expression.left, "myArray");
     testInfixExpression(expression.index, 1, "+", 1);
+  });
+
+  it("should correctly parse a for loop", () => {
+    const input = "for i = range(6) { x }";
+    const program = setup(input);
+    const statement = program.statements[0];
+    expect(statement).toImplement(ForStatement);
+
+    testForStatement(statement);
   });
 });
 
