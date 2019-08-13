@@ -225,6 +225,24 @@ class FunctionLiteral extends Expression {
   }
 }
 
+class CallExpression extends Expression {
+  constructor(token, func, callArguments) {
+    super(token);
+    this.func = func;
+    this.callArguments = callArguments;
+  }
+
+  tokenLiteral() {
+    return this.token.literal;
+  }
+
+  string() {
+    let args = [];
+    this.callArguments.forEach(arg => args.push(arg.string()));
+    return `${this.func.string()}(${args.join(", ")})`;
+  }
+}
+
 export {
   Program,
   LetStatement,
@@ -238,5 +256,6 @@ export {
   PrefixExpression,
   InfixExpression,
   IfExpression,
-  FunctionLiteral
+  FunctionLiteral,
+  CallExpression
 };

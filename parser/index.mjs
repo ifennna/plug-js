@@ -1,6 +1,7 @@
 import {
   BlockStatement,
   Bool,
+  CallExpression,
   ExpressionStatement,
   FunctionLiteral,
   Identifier,
@@ -21,6 +22,7 @@ const LESSGREATER = 2;
 const SUM = 3;
 const PRODUCT = 4;
 const PREFIX = 5;
+const CALL = 6;
 
 const precedenceTable = new Map();
 precedenceTable.set(Token.EQ, EQUALS);
@@ -31,6 +33,7 @@ precedenceTable.set(Token.PLUS, SUM);
 precedenceTable.set(Token.MINUS, SUM);
 precedenceTable.set(Token.SLASH, PRODUCT);
 precedenceTable.set(Token.ASTERISK, PRODUCT);
+precedenceTable.set(Token.LPAREN, CALL);
 
 export default class Parser {
   constructor(lexer) {
@@ -61,6 +64,7 @@ export default class Parser {
     this.infixParseFunctions.set(Token.NOT_EQ, this.parseInfixExpression);
     this.infixParseFunctions.set(Token.LT, this.parseInfixExpression);
     this.infixParseFunctions.set(Token.GT, this.parseInfixExpression);
+    this.infixParseFunctions.set(Token.LPAREN, this.parseCallExpression);
 
     this.nextToken(); // set current token
     this.nextToken(); // set peek token
@@ -291,7 +295,6 @@ export default class Parser {
     );
     identifiers.push(identifier);
 
-    debugger;
     while (this.peekTokenIs(Token.COMMA)) {
       this.nextToken(); // move to the comma
       this.nextToken(); // move to the next parameter
@@ -309,6 +312,35 @@ export default class Parser {
     }
 
     return identifiers;
+  }
+
+  parseCallExpression(func) {
+    const callArguments = this.parseExpressionList(Token.RPAREN);
+    return new CallExpression(this.currentToken, func, callArguments);
+  }
+
+  parseExpressionList(endToken) {
+    //debugger;
+    let list = [];
+    if (this.peekTokenIs(endToken)) {
+      this.nextToken();
+      return list;
+    }
+    this.nextToken();
+    list.push(this.parseExpression(LOWEST));
+
+    while (this.peekTokenIs(Token.COMMA)) {
+      this.nextToken(); // move to the comma
+      this.nextToken(); // move to the next element
+      list.push(this.parseExpression(LOWEST));
+    }
+
+    if (!this.expectPeek(endToken)) {
+      this.throwPeekError(Token.RPAREN);
+      return;
+    }
+
+    return list;
   }
 
   nextToken() {

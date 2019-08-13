@@ -12,7 +12,8 @@ import {
   LetStatement,
   IfExpression,
   StringLiteral,
-  FunctionLiteral
+  FunctionLiteral,
+  CallExpression
 } from "../ast/index";
 
 const setup = input => {
@@ -262,6 +263,21 @@ describe("Parser", () => {
     expect(body).toImplement(ExpressionStatement);
     testInfixExpression(body.expression, "a", "*", "b");
   });
+
+  it("should parse call expressions", () => {
+    const input = "add(1, 2*3, 3+4)";
+    const program = setup(input);
+    const statement = getStatement(program);
+    const expression = statement.expression;
+
+    expect(expression).toImplement(CallExpression);
+    testIdentifier(expression.func, "add");
+    expect(expression.callArguments.length).toEqual(3);
+
+    testLiteralExpression(expression.callArguments[0], 1);
+    testInfixExpression(expression.callArguments[1], 2, "*", 3);
+    testInfixExpression(expression.callArguments[2], 3, "+", 4);
+  });
 });
 
 describe("Parser checks", () => {
@@ -354,19 +370,19 @@ describe("Parser checks", () => {
       {
         input: "!(true == true)",
         expected: "(!(true == true))"
+      },
+      {
+        input: "a + add(b * c) + d",
+        expected: "((a + add((b * c))) + d)"
+      },
+      {
+        input: "add(a, b, 1, 2 * 3, 4 + 5, add(6, 7 * 8))",
+        expected: "add(a, b, 1, (2 * 3), (4 + 5), add(6, (7 * 8)))"
+      },
+      {
+        input: "add(a + b + c * d / f + g)",
+        expected: "add((((a + b) + ((c * d) / f)) + g))"
       }
-      // {
-      //   input: "a + add(b * c) + d",
-      //   expected: "((a + add((b * c))) + d)"
-      // },
-      // {
-      //   input: "add(a, b, 1, 2 * 3, 4 + 5, add(6, 7 * 8))",
-      //   expected: "add(a, b, 1, (2 * 3), (4 + 5), add(6, (7 * 8)))"
-      // },
-      // {
-      //   input: "add(a + b + c * d / f + g)",
-      //   expected: "add((((a + b) + ((c * d) / f)) + g))"
-      // },
       // {
       //   input: "a * [1, 2, 3, 4][b * c] * d",
       //   expected: "((a * ([1, 2, 3, 4][(b * c)])) * d)"
