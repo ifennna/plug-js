@@ -13,7 +13,9 @@ import {
   IfExpression,
   StringLiteral,
   FunctionLiteral,
-  CallExpression
+  CallExpression,
+  ArrayLiteral,
+  IndexExpression
 } from "../ast/index";
 
 const setup = input => {
@@ -278,6 +280,32 @@ describe("Parser", () => {
     testInfixExpression(expression.callArguments[1], 2, "*", 3);
     testInfixExpression(expression.callArguments[2], 3, "+", 4);
   });
+
+  it("should parse array literals", () => {
+    const input = "[1, 2*3, 3+4]";
+    const program = setup(input);
+    const statement = getStatement(program);
+    const expression = statement.expression;
+
+    expect(expression).toImplement(ArrayLiteral);
+    expect(expression.elements.length).toEqual(3);
+
+    testLiteralExpression(expression.elements[0], 1);
+    testInfixExpression(expression.elements[1], 2, "*", 3);
+    testInfixExpression(expression.elements[2], 3, "+", 4);
+  });
+
+  it("should parse array indexes", () => {
+    const input = "myArray[1 + 1]";
+    const program = setup(input);
+    const statement = getStatement(program);
+    const expression = statement.expression;
+
+    expect(expression).toImplement(IndexExpression);
+
+    testIdentifier(expression.left, "myArray");
+    testInfixExpression(expression.index, 1, "+", 1);
+  });
 });
 
 describe("Parser checks", () => {
@@ -382,15 +410,15 @@ describe("Parser checks", () => {
       {
         input: "add(a + b + c * d / f + g)",
         expected: "add((((a + b) + ((c * d) / f)) + g))"
+      },
+      {
+        input: "a * [1, 2, 3, 4][b * c] * d",
+        expected: "((a * ([1, 2, 3, 4][(b * c)])) * d)"
+      },
+      {
+        input: "add(a * b[2], b[1], 2 * [1, 2][1])",
+        expected: "add((a * (b[2])), (b[1]), (2 * ([1, 2][1])))"
       }
-      // {
-      //   input: "a * [1, 2, 3, 4][b * c] * d",
-      //   expected: "((a * ([1, 2, 3, 4][(b * c)])) * d)"
-      // },
-      // {
-      //   input: "add(a * b[2], b[1], 2 * [1, 2][1])",
-      //   expected: "add((a * (b[2])), (b[1]), (2 * ([1, 2][1])))"
-      // }
     ];
 
     testCases.forEach(testCase => {

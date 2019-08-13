@@ -243,6 +243,39 @@ class CallExpression extends Expression {
   }
 }
 
+class ArrayLiteral extends Expression {
+  constructor(token, elements) {
+    super(token);
+    this.elements = elements;
+  }
+
+  tokenLiteral() {
+    return this.token.literal;
+  }
+
+  string() {
+    let elems = [];
+    this.elements.forEach(element => elems.push(element.string()));
+    return `[${elems.join(", ")}]`;
+  }
+}
+
+class IndexExpression extends Expression {
+  constructor(token, left, index) {
+    super(token);
+    this.left = left;
+    this.index = index;
+  }
+
+  tokenLiteral() {
+    return this.token.literal;
+  }
+
+  string() {
+    return `(${this.left.string()}[${this.index.string()}])`;
+  }
+}
+
 export {
   Program,
   LetStatement,
@@ -257,5 +290,7 @@ export {
   InfixExpression,
   IfExpression,
   FunctionLiteral,
-  CallExpression
+  CallExpression,
+  ArrayLiteral,
+  IndexExpression
 };

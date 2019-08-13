@@ -1,4 +1,5 @@
 import {
+  ArrayLiteral,
   BlockStatement,
   Bool,
   CallExpression,
@@ -6,6 +7,7 @@ import {
   FunctionLiteral,
   Identifier,
   IfExpression,
+  IndexExpression,
   InfixExpression,
   IntegerLiteral,
   LetStatement,
@@ -23,6 +25,7 @@ const SUM = 3;
 const PRODUCT = 4;
 const PREFIX = 5;
 const CALL = 6;
+const INDEX = 7;
 
 const precedenceTable = new Map();
 precedenceTable.set(Token.EQ, EQUALS);
@@ -34,6 +37,7 @@ precedenceTable.set(Token.MINUS, SUM);
 precedenceTable.set(Token.SLASH, PRODUCT);
 precedenceTable.set(Token.ASTERISK, PRODUCT);
 precedenceTable.set(Token.LPAREN, CALL);
+precedenceTable.set(Token.LBRACKET, INDEX);
 
 export default class Parser {
   constructor(lexer) {
@@ -54,6 +58,7 @@ export default class Parser {
     this.prefixParseFunctions.set(Token.MINUS, this.parsePrefixExpression);
     this.prefixParseFunctions.set(Token.IF, this.parseIfExpression);
     this.prefixParseFunctions.set(Token.FUNCTION, this.parseFunctionLiteral);
+    this.prefixParseFunctions.set(Token.LBRACKET, this.parseArrayLiteral);
 
     this.infixParseFunctions = new Map();
     this.infixParseFunctions.set(Token.PLUS, this.parseInfixExpression);
@@ -65,6 +70,7 @@ export default class Parser {
     this.infixParseFunctions.set(Token.LT, this.parseInfixExpression);
     this.infixParseFunctions.set(Token.GT, this.parseInfixExpression);
     this.infixParseFunctions.set(Token.LPAREN, this.parseCallExpression);
+    this.infixParseFunctions.set(Token.LBRACKET, this.parseIndexExpression);
 
     this.nextToken(); // set current token
     this.nextToken(); // set peek token
@@ -341,6 +347,24 @@ export default class Parser {
     }
 
     return list;
+  }
+
+  parseArrayLiteral() {
+    const elements = this.parseExpressionList(Token.RBRACKET);
+    return new ArrayLiteral(this.currentToken, elements);
+  }
+
+  parseIndexExpression(left) {
+    const token = this.token;
+    this.nextToken();
+    const index = this.parseExpression(LOWEST);
+
+    if (!this.expectPeek(Token.RBRACKET)) {
+      this.throwPeekError(Token.RPAREN);
+      return;
+    }
+
+    return new IndexExpression(token, left, index);
   }
 
   nextToken() {
