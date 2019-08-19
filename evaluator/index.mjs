@@ -7,6 +7,7 @@ import {
 } from "../object/index";
 import {
   ExpressionStatement,
+  InfixExpression,
   IntegerLiteral,
   PrefixExpression,
   Program
@@ -18,6 +19,12 @@ export default function Eval(node) {
       return evalProgram(node);
     case ExpressionStatement:
       return Eval(node.expression);
+    case InfixExpression:
+      let left = Eval(node.left);
+      if (isError(left)) return left;
+      let right = Eval(node.right);
+      if (isError(right)) return right;
+      return evalInfixExpression(node.operator, left, right);
     case PrefixExpression:
       let rightExpression = Eval(node.right);
       if (isError(rightExpression)) return rightExpression;
@@ -44,6 +51,29 @@ const evalProgram = program => {
   });
 
   return result;
+};
+
+const evalInfixExpression = (operator, left, right) => {
+  if (left.type() === INTEGER && right.type() === INTEGER) {
+    return evalIntegerInfixOperation(operator, left, right);
+  } else {
+    return new PlugError(
+      `Unknown operation: ${left.type()} ${operator} ${right.type()}`
+    );
+  }
+};
+
+const evalIntegerInfixOperation = (operator, left, right) => {
+  switch (operator) {
+    case "+":
+      return new Integer(left.value + right.value);
+    case "-":
+      return new Integer(left.value - right.value);
+    case "*":
+      return new Integer(left.value * right.value);
+    case "/":
+      return new Integer(left.value / right.value);
+  }
 };
 
 const evalPrefixExpression = (operator, right) => {
