@@ -46,7 +46,7 @@ class String {
   }
 }
 
-class Boolean {
+class PlugBoolean {
   constructor(value) {
     this.value = value;
   }
@@ -88,4 +88,4 @@ class PlugError {
   }
 }
 
-export { Integer, String, Boolean, ReturnValue, PlugError };
+export { Null, Integer, String, PlugBoolean, ReturnValue, PlugError };

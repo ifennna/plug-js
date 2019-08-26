@@ -1,17 +1,28 @@
 import {
   ERROR,
   INTEGER,
+  Null,
   Integer,
+  PlugBoolean,
   PlugError,
-  ReturnValue
+  ReturnValue,
+  RETURN_VALUE
 } from "../object/index";
 import {
+  BlockStatement,
+  Bool,
   ExpressionStatement,
+  IfExpression,
   InfixExpression,
   IntegerLiteral,
   PrefixExpression,
-  Program
+  Program,
+  ReturnStatement
 } from "../ast/index";
+
+const NULL = new Null();
+const TRUE = new PlugBoolean(true);
+const FALSE = new PlugBoolean(false);
 
 export default function Eval(node) {
   switch (node.constructor) {
@@ -19,6 +30,16 @@ export default function Eval(node) {
       return evalProgram(node);
     case ExpressionStatement:
       return Eval(node.expression);
+    case BlockStatement:
+      return evalBlockStatement(node);
+    case ReturnStatement:
+      const value = Eval(node.returnValue);
+      if (isError(value)) {
+        return value;
+      }
+      return new ReturnValue(value);
+    case IfExpression:
+      return evalIfExpression(node);
     case InfixExpression:
       let left = Eval(node.left);
       if (isError(left)) return left;
@@ -31,11 +52,13 @@ export default function Eval(node) {
       return evalPrefixExpression(node.operator, rightExpression);
     case IntegerLiteral:
       return new Integer(node.value);
+    case Bool:
+      return referenceBooleanObject(node.value);
   }
 }
 
 const evalProgram = program => {
-  let result;
+  let result = null;
 
   program.statements.forEach(statement => {
     result = Eval(statement);
@@ -44,7 +67,8 @@ const evalProgram = program => {
     // the code within the scope
     switch (result.constructor) {
       case ReturnValue:
-        return result.value;
+        result = result.value;
+        return result;
       case PlugError:
         return result;
     }
@@ -53,9 +77,59 @@ const evalProgram = program => {
   return result;
 };
 
+const evalBlockStatement = block => {
+  let result = null;
+
+  block.statements.forEach(statement => {
+    result = Eval(statement);
+    if (result) {
+      const resultType = result.type();
+      if (resultType === RETURN_VALUE || resultType === ERROR) {
+        return result;
+      }
+    }
+  });
+
+  return result;
+};
+
+const evalIfExpression = expression => {
+  const condition = Eval(expression.condition);
+  if (isError(condition)) return condition;
+
+  if (isTruthy(condition)) {
+    return Eval(expression.consequence);
+  } else if (expression.alternative) {
+    return Eval(expression.alternative);
+  } else {
+    return NULL;
+  }
+};
+
+const isTruthy = object => {
+  switch (object) {
+    case NULL:
+      return false;
+    case FALSE:
+      return false;
+    case TRUE:
+      return true;
+    default:
+      return true;
+  }
+};
+
 const evalInfixExpression = (operator, left, right) => {
   if (left.type() === INTEGER && right.type() === INTEGER) {
     return evalIntegerInfixOperation(operator, left, right);
+  } else if (operator === "==") {
+    return referenceBooleanObject(left === right);
+  } else if (operator === "!=") {
+    return referenceBooleanObject(left !== right);
+  } else if (left.type() !== right.type()) {
+    return new PlugError(
+      `Type mismatch: ${left.type()} ${operator} ${right.type()}`
+    );
   } else {
     return new PlugError(
       `Unknown operation: ${left.type()} ${operator} ${right.type()}`
@@ -73,11 +147,25 @@ const evalIntegerInfixOperation = (operator, left, right) => {
       return new Integer(left.value * right.value);
     case "/":
       return new Integer(left.value / right.value);
+    case ">":
+      return referenceBooleanObject(left.value > right.value);
+    case "<":
+      return referenceBooleanObject(left.value < right.value);
+    case "==":
+      return referenceBooleanObject(left.value === right.value);
+    case "!=":
+      return referenceBooleanObject(left.value !== right.value);
+    default:
+      return new PlugError(
+        `Unknown operation: ${left.type()} ${operator} ${right.type()}`
+      );
   }
 };
 
 const evalPrefixExpression = (operator, right) => {
   switch (operator) {
+    case "!":
+      return evalBangOperator(right);
     case "-":
       return evalMinusPrefixOperator(right);
     default:
@@ -91,6 +179,23 @@ const evalMinusPrefixOperator = expression => {
   }
 
   return new Integer(-expression.value);
+};
+
+const evalBangOperator = expression => {
+  switch (expression) {
+    case TRUE:
+      return FALSE;
+    case FALSE:
+      return TRUE;
+    case NULL:
+      return TRUE;
+    default:
+      return FALSE;
+  }
+};
+
+const referenceBooleanObject = input => {
+  return input ? TRUE : FALSE;
 };
 
 const isError = object => {
