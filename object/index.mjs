@@ -8,7 +8,15 @@ export const ARRAY = "ARRAY";
 export const ERROR = "ERROR";
 export const BUILTIN = "BUILTIN";
 
-class Null {
+class Object {
+  [Symbol.toPrimitive](hint) {
+    if (hint === "string") {
+      return this.constructor.name;
+    }
+  }
+}
+
+class Null extends Object {
   type() {
     return NULL;
   }
@@ -18,8 +26,9 @@ class Null {
   }
 }
 
-class Integer {
+class Integer extends Object {
   constructor(value) {
+    super();
     this.value = value;
   }
 
@@ -32,8 +41,9 @@ class Integer {
   }
 }
 
-class String {
+class PlugString extends Object {
   constructor(value) {
+    super();
     this.value = value;
   }
 
@@ -46,8 +56,9 @@ class String {
   }
 }
 
-class PlugBoolean {
+class PlugBoolean extends Object {
   constructor(value) {
+    super();
     this.value = value;
   }
 
@@ -60,8 +71,9 @@ class PlugBoolean {
   }
 }
 
-class ReturnValue {
+class ReturnValue extends Object {
   constructor(value) {
+    super();
     this.value = value;
   }
 
@@ -74,8 +86,9 @@ class ReturnValue {
   }
 }
 
-class PlugError {
+class PlugError extends Object {
   constructor(message) {
+    super();
     this.message = message;
   }
 
@@ -88,4 +101,4 @@ class PlugError {
   }
 }
 
-export { Null, Integer, String, PlugBoolean, ReturnValue, PlugError };
+export { Null, Integer, PlugString, PlugBoolean, ReturnValue, PlugError };
