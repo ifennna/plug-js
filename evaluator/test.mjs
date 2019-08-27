@@ -109,4 +109,26 @@ describe("Evaluator", () => {
         : testNullObject(evaluated);
     });
   });
+
+  it("should evaluate return statements", () => {
+    const testCases = [
+      { input: "return 10;", expected: 10 },
+      { input: "return 10; 9;", expected: 10 },
+      { input: "return 2 * 5; 9;", expected: 10 },
+      { input: "9; return 10; 9;", expected: 10 },
+      {
+        input: `if (10 > 1) {
+					if (10 > 1) {
+						return 10;
+					}
+					return 1;
+				}`,
+        expected: 10
+      }
+    ];
+
+    testCases.forEach(testCase => {
+      testIntegerObject(testCase.expected, testEval(testCase.input));
+    });
+  });
 });

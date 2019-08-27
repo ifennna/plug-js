@@ -60,7 +60,7 @@ export default function Eval(node) {
 const evalProgram = program => {
   let result = null;
 
-  program.statements.forEach(statement => {
+  for (let statement of program.statements) {
     result = Eval(statement);
 
     // if there's an error or return statement, return it and ignore the rest of
@@ -72,7 +72,7 @@ const evalProgram = program => {
       case PlugError:
         return result;
     }
-  });
+  }
 
   return result;
 };
@@ -80,7 +80,7 @@ const evalProgram = program => {
 const evalBlockStatement = block => {
   let result = null;
 
-  block.statements.forEach(statement => {
+  for (let statement of block.statements) {
     result = Eval(statement);
     if (result) {
       const resultType = result.type();
@@ -88,7 +88,7 @@ const evalBlockStatement = block => {
         return result;
       }
     }
-  });
+  }
 
   return result;
 };
