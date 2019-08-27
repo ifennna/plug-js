@@ -2,7 +2,7 @@ import { describe, expect, it } from "../testHelpers";
 import Lexer from "../lexer/index";
 import Parser from "../parser/index";
 import Eval from "./index";
-import { Integer, Null, PlugBoolean } from "../object/index";
+import { Integer, Null, PlugBoolean, PlugString } from "../object/index";
 import { Environment } from "../object/environment";
 
 const testEval = input => {
@@ -145,5 +145,21 @@ describe("Evaluator", () => {
     testCases.forEach(testCase => {
       testIntegerObject(testCase.expected, testEval(testCase.input));
     });
+  });
+
+  it("should evaluate string literals", () => {
+    const input = `"Hello World!"`;
+    const evaluated = testEval(input);
+
+    expect(evaluated).toImplement(PlugString);
+    expect(evaluated.value).toEqual("Hello World!");
+  });
+
+  it("should evaluate string concatenation", () => {
+    const input = `"Hello" + " " + "World!"`;
+    const evaluated = testEval(input);
+
+    expect(evaluated).toImplement(PlugString);
+    expect(evaluated.value).toEqual("Hello World!");
   });
 });

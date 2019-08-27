@@ -6,7 +6,9 @@ import {
   PlugBoolean,
   PlugError,
   ReturnValue,
-  RETURN_VALUE
+  RETURN_VALUE,
+  PlugString,
+  STRING
 } from "../object/index";
 import {
   BlockStatement,
@@ -19,7 +21,8 @@ import {
   LetStatement,
   PrefixExpression,
   Program,
-  ReturnStatement
+  ReturnStatement,
+  StringLiteral
 } from "../ast/index";
 
 const NULL = new Null();
@@ -59,6 +62,8 @@ export default function Eval(node, env) {
       return evalPrefixExpression(node.operator, rightExpression);
     case Identifier:
       return evalIdentifier(node, env);
+    case StringLiteral:
+      return new PlugString(node.value);
     case IntegerLiteral:
       return new Integer(node.value);
     case Bool:
@@ -131,6 +136,8 @@ const isTruthy = object => {
 const evalInfixExpression = (operator, left, right) => {
   if (left.type() === INTEGER && right.type() === INTEGER) {
     return evalIntegerInfixOperation(operator, left, right);
+  } else if (left.type() === STRING && right.type() === STRING) {
+    return evalStringInfixOperation(operator, left, right);
   } else if (operator === "==") {
     return referenceBooleanObject(left === right);
   } else if (operator === "!=") {
@@ -169,6 +176,15 @@ const evalIntegerInfixOperation = (operator, left, right) => {
         `Unknown operation: ${left.type()} ${operator} ${right.type()}`
       );
   }
+};
+
+const evalStringInfixOperation = (operator, left, right) => {
+  if (operator !== "+")
+    return new PlugError(
+      `Unknown operation: ${left.type()} ${operator} ${right.type()}`
+    );
+
+  return new PlugString(left.value + right.value);
 };
 
 const evalPrefixExpression = (operator, right) => {
