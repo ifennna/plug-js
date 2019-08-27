@@ -71,6 +71,24 @@ class PlugBoolean extends Object {
   }
 }
 
+class PlugArray extends Object {
+  constructor(elements) {
+    super();
+    this.elements = elements;
+  }
+
+  type() {
+    return ARRAY;
+  }
+
+  inspect() {
+    let elemStrings = [];
+    this.elements.forEach(element => elemStrings.push(element.inspect()));
+
+    return `[${elemStrings.join(", ")}]`;
+  }
+}
+
 class ReturnValue extends Object {
   constructor(value) {
     super();
@@ -82,7 +100,7 @@ class ReturnValue extends Object {
   }
 
   inspect() {
-    return this.value;
+    return this.value.inspect();
   }
 }
 
@@ -101,4 +119,12 @@ class PlugError extends Object {
   }
 }
 
-export { Null, Integer, PlugString, PlugBoolean, ReturnValue, PlugError };
+export {
+  Null,
+  Integer,
+  PlugString,
+  PlugBoolean,
+  PlugArray,
+  ReturnValue,
+  PlugError
+};

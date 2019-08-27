@@ -2,7 +2,14 @@ import { describe, expect, it } from "../testHelpers";
 import Lexer from "../lexer/index";
 import Parser from "../parser/index";
 import Eval from "./index";
-import { Integer, Null, PlugBoolean, PlugString } from "../object/index";
+import {
+  Integer,
+  Null,
+  PlugArray,
+  PlugBoolean,
+  PlugError,
+  PlugString
+} from "../object/index";
 import { Environment } from "../object/environment";
 
 const testEval = input => {
@@ -21,6 +28,11 @@ const testIntegerObject = (expected, evaluated) => {
 const testBooleanObject = (expected, evaluated) => {
   expect(evaluated).toImplement(PlugBoolean);
   expect(evaluated.value).toEqual(expected);
+};
+
+const testErrorObject = (expected, evaluated) => {
+  expect(evaluated).toImplement(PlugError);
+  expect(evaluated.message).toEqual(expected);
 };
 
 const testNullObject = evaluated => {
@@ -161,5 +173,45 @@ describe("Evaluator", () => {
 
     expect(evaluated).toImplement(PlugString);
     expect(evaluated.value).toEqual("Hello World!");
+  });
+
+  it("should evaluate array literals", () => {
+    const input = "[1, 2 * 3, 4 + 5]";
+    const evaluated = testEval(input);
+
+    expect(evaluated).toImplement(PlugArray);
+    expect(evaluated.elements.length).toEqual(3);
+
+    testIntegerObject(1, evaluated.elements[0]);
+    testIntegerObject(6, evaluated.elements[1]);
+    testIntegerObject(9, evaluated.elements[2]);
+  });
+
+  it("should evaluate array index expressions", () => {
+    const testCases = [
+      { input: "[1, 2, 3][0]", expected: 1 },
+      { input: "[1, 2, 3][1]", expected: 2 },
+      { input: "[1, 2, 3][2]", expected: 3 },
+      { input: "let i = 0; [1][i];", expected: 1 },
+      { input: "[1, 2, 3][1 + 1];", expected: 3 },
+      { input: "let myArray = [1, 2, 3]; myArray[2];", expected: 3 },
+      {
+        input: "let myArray = [1, 2, 3]; myArray[0] + myArray[1] + myArray[2];",
+        expected: 6
+      },
+      {
+        input: "let myArray = [1, 2, 3]; let i = myArray[0]; myArray[i]",
+        expected: 2
+      },
+      { input: "[1, 2, 3][3]", expected: "Array index out of bounds" },
+      { input: "[1, 2, 3][-1]", expected: "Array index out of bounds" }
+    ];
+
+    testCases.forEach(testCase => {
+      const evaluated = testEval(testCase.input);
+      typeof testCase.expected === "number"
+        ? testIntegerObject(testCase.expected, evaluated)
+        : testErrorObject(testCase.expected, evaluated);
+    });
   });
 });

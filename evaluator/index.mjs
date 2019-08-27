@@ -8,14 +8,18 @@ import {
   ReturnValue,
   RETURN_VALUE,
   PlugString,
-  STRING
+  STRING,
+  PlugArray,
+  ARRAY
 } from "../object/index";
 import {
+  ArrayLiteral,
   BlockStatement,
   Bool,
   ExpressionStatement,
   Identifier,
   IfExpression,
+  IndexExpression,
   InfixExpression,
   IntegerLiteral,
   LetStatement,
@@ -50,6 +54,17 @@ export default function Eval(node, env) {
       break;
     case IfExpression:
       return evalIfExpression(node);
+    case IndexExpression:
+      const leftExpression = Eval(node.left, env);
+      if (isError(leftExpression)) return leftExpression;
+      const index = Eval(node.index, env);
+      if (isError(index)) return index;
+
+      return evalIndexExpression(leftExpression, index);
+    case ArrayLiteral:
+      const elements = evalExpressions(node.elements, env);
+      if (elements.length === 1 && isError(elements[0])) return elements;
+      return new PlugArray(elements);
     case InfixExpression:
       let left = Eval(node.left, env);
       if (isError(left)) return left;
@@ -107,6 +122,17 @@ const evalBlockStatement = (block, env) => {
   return result;
 };
 
+const evalExpressions = (expressions, env) => {
+  let result = [];
+  expressions.forEach(expression => {
+    const evaluated = Eval(expression, env);
+    if (isError(evaluated)) return evaluated;
+
+    result.push(evaluated);
+  });
+  return result;
+};
+
 const evalIfExpression = (expression, env) => {
   const condition = Eval(expression.condition);
   if (isError(condition)) return condition;
@@ -131,6 +157,21 @@ const isTruthy = object => {
     default:
       return true;
   }
+};
+
+const evalIndexExpression = (array, index) => {
+  if (array.type() !== ARRAY && index.type() !== INTEGER)
+    return new PlugError(
+      `Index operator not supported: ${array.type()}[${index.type()}]`
+    );
+
+  const max = array.elements.length - 1;
+
+  if (index.value < 0 || index.value > max) {
+    return new PlugError(`Array index out of bounds`);
+  }
+
+  return array.elements[index.value];
 };
 
 const evalInfixExpression = (operator, left, right) => {
