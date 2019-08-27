@@ -3,12 +3,14 @@ import Lexer from "../lexer/index";
 import Parser from "../parser/index";
 import Eval from "./index";
 import { Integer, Null, PlugBoolean } from "../object/index";
+import { Environment } from "../object/environment";
 
 const testEval = input => {
-  let parser = new Parser(new Lexer(input));
-  let program = parser.parseProgram();
+  const parser = new Parser(new Lexer(input));
+  const program = parser.parseProgram();
+  const env = new Environment();
 
-  return Eval(program);
+  return Eval(program, env);
 };
 
 const testIntegerObject = (expected, evaluated) => {
@@ -125,6 +127,19 @@ describe("Evaluator", () => {
 				}`,
         expected: 10
       }
+    ];
+
+    testCases.forEach(testCase => {
+      testIntegerObject(testCase.expected, testEval(testCase.input));
+    });
+  });
+
+  it("should evaluate let statements", () => {
+    const testCases = [
+      { input: "let a = 5; a;", expected: 5 },
+      { input: "let a = 5 * 5; a;", expected: 25 },
+      { input: "let a = 5; let b = a; b;", expected: 5 },
+      { input: "let a = 5; let b = a; let c = b + a + 5; c;", expected: 15 }
     ];
 
     testCases.forEach(testCase => {

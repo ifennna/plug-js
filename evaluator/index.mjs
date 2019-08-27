@@ -12,9 +12,11 @@ import {
   BlockStatement,
   Bool,
   ExpressionStatement,
+  Identifier,
   IfExpression,
   InfixExpression,
   IntegerLiteral,
+  LetStatement,
   PrefixExpression,
   Program,
   ReturnStatement
@@ -24,32 +26,39 @@ const NULL = new Null();
 const TRUE = new PlugBoolean(true);
 const FALSE = new PlugBoolean(false);
 
-export default function Eval(node) {
+export default function Eval(node, env) {
   switch (node.constructor) {
     case Program:
-      return evalProgram(node);
+      return evalProgram(node, env);
     case ExpressionStatement:
-      return Eval(node.expression);
+      return Eval(node.expression, env);
     case BlockStatement:
-      return evalBlockStatement(node);
+      return evalBlockStatement(node, env);
     case ReturnStatement:
-      const value = Eval(node.returnValue);
+      const value = Eval(node.returnValue, env);
       if (isError(value)) {
         return value;
       }
       return new ReturnValue(value);
+    case LetStatement:
+      let letValue = Eval(node.value, env);
+      if (isError(letValue)) return letValue;
+      env.set(node.name.value, letValue);
+      break;
     case IfExpression:
       return evalIfExpression(node);
     case InfixExpression:
-      let left = Eval(node.left);
+      let left = Eval(node.left, env);
       if (isError(left)) return left;
-      let right = Eval(node.right);
+      let right = Eval(node.right, env);
       if (isError(right)) return right;
       return evalInfixExpression(node.operator, left, right);
     case PrefixExpression:
-      let rightExpression = Eval(node.right);
+      let rightExpression = Eval(node.right, env);
       if (isError(rightExpression)) return rightExpression;
       return evalPrefixExpression(node.operator, rightExpression);
+    case Identifier:
+      return evalIdentifier(node, env);
     case IntegerLiteral:
       return new Integer(node.value);
     case Bool:
@@ -57,15 +66,15 @@ export default function Eval(node) {
   }
 }
 
-const evalProgram = program => {
+const evalProgram = (program, env) => {
   let result = null;
 
   for (let statement of program.statements) {
-    result = Eval(statement);
+    result = Eval(statement, env);
 
     // if there's an error or return statement, return it and ignore the rest of
     // the code within the scope
-    switch (result.constructor) {
+    switch (result ? result.constructor : result) {
       case ReturnValue:
         result = result.value;
         return result;
@@ -77,11 +86,11 @@ const evalProgram = program => {
   return result;
 };
 
-const evalBlockStatement = block => {
+const evalBlockStatement = (block, env) => {
   let result = null;
 
   for (let statement of block.statements) {
-    result = Eval(statement);
+    result = Eval(statement, env);
     if (result) {
       const resultType = result.type();
       if (resultType === RETURN_VALUE || resultType === ERROR) {
@@ -93,14 +102,14 @@ const evalBlockStatement = block => {
   return result;
 };
 
-const evalIfExpression = expression => {
+const evalIfExpression = (expression, env) => {
   const condition = Eval(expression.condition);
   if (isError(condition)) return condition;
 
   if (isTruthy(condition)) {
-    return Eval(expression.consequence);
+    return Eval(expression.consequence, env);
   } else if (expression.alternative) {
-    return Eval(expression.alternative);
+    return Eval(expression.alternative, env);
   } else {
     return NULL;
   }
@@ -191,6 +200,14 @@ const evalBangOperator = expression => {
       return TRUE;
     default:
       return FALSE;
+  }
+};
+
+const evalIdentifier = (node, env) => {
+  if (env.get(node.value)) {
+    return env.get(node.value);
+  } else {
+    return new PlugError(`Identifier not found: ${node.value}`);
   }
 };
 
