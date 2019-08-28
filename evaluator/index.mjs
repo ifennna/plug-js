@@ -33,6 +33,7 @@ import {
   StringLiteral
 } from "../ast/index";
 import { EnclosedEnvironment } from "../object/environment";
+import { builtins } from "./builtins";
 
 const NULL = new Null();
 const TRUE = new PlugBoolean(true);
@@ -155,6 +156,8 @@ const applyFunction = (func, args) => {
       const innerEnv = createFunctionScope(func, args);
       const evaluated = Eval(func.body, innerEnv);
       return unwrapReturnValue(evaluated);
+    case Builtin:
+      return func.func(...args);
     default:
       return new PlugError(`Not a function ${func.constructor.name}`);
   }
@@ -306,9 +309,10 @@ const evalBangOperator = expression => {
 const evalIdentifier = (node, env) => {
   if (env.get(node.value)) {
     return env.get(node.value);
-  } else {
-    return new PlugError(`Identifier not found: ${node.value}`);
   }
+  if (builtins.has(node.value)) return builtins.get(node.value);
+
+  return new PlugError(`Identifier not found: ${node.value}`);
 };
 
 const referenceBooleanObject = input => {

@@ -246,4 +246,52 @@ describe("Evaluator", () => {
       testIntegerObject(testCase.expected, testEval(testCase.input));
     });
   });
+
+  it("should evaluate builtin functions", () => {
+    const testCases = [
+      { input: `len("")`, expected: 0 },
+      { input: `len("four")`, expected: 4 },
+      { input: `len("hello world")`, expected: 11 },
+      { input: `len([])`, expected: 0 },
+      { input: `len([3, 9, 5])`, expected: 3 },
+      {
+        input: `len(1)`,
+        expected: "Argument to 'len' not supported, got INTEGER"
+      },
+      {
+        input: `len("one", "train")`,
+        expected: "Invalid number of arguments to 'len', expected 1, got 2"
+      },
+      { input: `first([])`, expected: null },
+      { input: `first([3, 9, 5])`, expected: 3 },
+      { input: `last([])`, expected: null },
+      { input: `last([3, 9, 5])`, expected: 5 },
+      { input: `rest([3, 9, 5])`, expected: null },
+      { input: `rest([3, 9, 5])`, expected: [9, 5] },
+      { input: `push([3, 9, 5], 6)`, expected: [3, 9, 5, 6] },
+      { input: `push([], 1)`, expected: [1] },
+      {
+        input: `push("b", "a")`,
+        expected:
+          "First argument to 'push' not supported, expected ARRAY, got STRING"
+      }
+    ];
+
+    testCases.forEach(testCase => {
+      const evaluated = testEval(testCase.input);
+      switch (typeof testCase.expected) {
+        case "number":
+          testIntegerObject(testCase.expected, evaluated);
+          break;
+        case "string":
+          testErrorObject(testCase.expected, evaluated);
+          break;
+        case testCase.expected instanceof Array === true:
+          expect(evaluated).toImplement(PlugArray);
+          testCase.expected.forEach((element, index) => {
+            testIntegerObject(element, evaluated.elements[index]);
+          });
+      }
+    });
+  });
 });

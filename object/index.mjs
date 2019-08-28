@@ -140,6 +140,21 @@ class PlugError extends Object {
   }
 }
 
+class Builtin extends Object {
+  constructor(func) {
+    super();
+    this.func = func;
+  }
+
+  type() {
+    return BUILTIN;
+  }
+
+  inspect() {
+    return "builtin function";
+  }
+}
+
 export {
   Null,
   Integer,
@@ -148,5 +163,6 @@ export {
   PlugArray,
   PlugFunction,
   ReturnValue,
-  PlugError
+  PlugError,
+  Builtin
 };
