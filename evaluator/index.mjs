@@ -1,17 +1,18 @@
 import {
   ERROR,
   INTEGER,
+  STRING,
+  ARRAY,
+  RETURN_VALUE,
   Null,
   Integer,
   PlugBoolean,
   PlugError,
   ReturnValue,
-  RETURN_VALUE,
   PlugString,
-  STRING,
   PlugArray,
-  ARRAY,
-  PlugFunction
+  PlugFunction,
+  Builtin
 } from "../object/index";
 import {
   ArrayLiteral,
@@ -216,22 +217,23 @@ const evalIndexExpression = (array, index) => {
 };
 
 const evalInfixExpression = (operator, left, right) => {
-  if (left.type() === INTEGER && right.type() === INTEGER) {
-    return evalIntegerInfixOperation(operator, left, right);
-  } else if (left.type() === STRING && right.type() === STRING) {
-    return evalStringInfixOperation(operator, left, right);
-  } else if (operator === "==") {
-    return referenceBooleanObject(left === right);
-  } else if (operator === "!=") {
-    return referenceBooleanObject(left !== right);
-  } else if (left.type() !== right.type()) {
-    return new PlugError(
-      `Type mismatch: ${left.type()} ${operator} ${right.type()}`
-    );
-  } else {
-    return new PlugError(
-      `Unknown operation: ${left.type()} ${operator} ${right.type()}`
-    );
+  switch (true) {
+    case left.type() === INTEGER && right.type() === INTEGER:
+      return evalIntegerInfixOperation(operator, left, right);
+    case left.type() === STRING && right.type() === STRING:
+      return evalStringInfixOperation(operator, left, right);
+    case operator === "==":
+      return referenceBooleanObject(left === right);
+    case operator === "!=":
+      return referenceBooleanObject(left !== right);
+    case left.type() !== right.type():
+      return new PlugError(
+        `Type mismatch: ${left.type()} ${operator} ${right.type()}`
+      );
+    default:
+      return new PlugError(
+        `Unknown operation: ${left.type()} ${operator} ${right.type()}`
+      );
   }
 };
 

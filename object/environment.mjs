@@ -1,7 +1,7 @@
 export class Environment {
-  constructor() {
+  constructor(outer = null) {
     this.store = new Map();
-    this.outer = null;
+    this.outer = outer;
   }
 
   get(name) {
@@ -22,7 +22,6 @@ export class Environment {
 
 export class EnclosedEnvironment extends Environment {
   constructor(outerEnvironment) {
-    super();
-    this.outer = outerEnvironment;
+    super(outerEnvironment);
   }
 }

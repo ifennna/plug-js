@@ -1,3 +1,5 @@
+import { PlugError } from "../object/index";
+
 const describe = (description, func) => {
   console.log(description);
   func();
@@ -21,7 +23,10 @@ const assertions = actual => ({
       console.log("        pass");
       return true;
     } else {
-      const message = `fail: ${actual} is not an instance of ${expected} class`;
+      const message =
+        actual instanceof PlugError
+          ? actual.message
+          : `fail: ${actual} is not an instance of ${expected} class`;
       throw new Error(message);
     }
   }
