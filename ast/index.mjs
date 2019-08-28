@@ -61,7 +61,7 @@ class ReturnStatement extends Statement {
   }
 
   string() {
-    return `${this.token.literal} ${this.returnValue};`;
+    return `${this.token.literal} ${this.returnValue.string()};`;
   }
 }
 

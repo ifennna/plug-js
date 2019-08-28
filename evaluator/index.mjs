@@ -10,13 +10,16 @@ import {
   PlugString,
   STRING,
   PlugArray,
-  ARRAY
+  ARRAY,
+  PlugFunction
 } from "../object/index";
 import {
   ArrayLiteral,
   BlockStatement,
   Bool,
+  CallExpression,
   ExpressionStatement,
+  FunctionLiteral,
   Identifier,
   IfExpression,
   IndexExpression,
@@ -28,6 +31,7 @@ import {
   ReturnStatement,
   StringLiteral
 } from "../ast/index";
+import { EnclosedEnvironment } from "../object/environment";
 
 const NULL = new Null();
 const TRUE = new PlugBoolean(true);
@@ -52,6 +56,17 @@ export default function Eval(node, env) {
       if (isError(letValue)) return letValue;
       env.set(node.name.value, letValue);
       break;
+    case FunctionLiteral:
+      const parameters = node.parameters;
+      const body = node.body;
+      return new PlugFunction(parameters, body, env);
+    case CallExpression:
+      const func = Eval(node.func, env);
+      if (isError(func)) return func;
+      const args = evalExpressions(node.callArguments, env);
+      if (args.length === 1 && isError(args[0])) return args[0];
+
+      return applyFunction(func, args);
     case IfExpression:
       return evalIfExpression(node);
     case IndexExpression:
@@ -131,6 +146,32 @@ const evalExpressions = (expressions, env) => {
     result.push(evaluated);
   });
   return result;
+};
+
+const applyFunction = (func, args) => {
+  switch (func.constructor) {
+    case PlugFunction:
+      const innerEnv = createFunctionScope(func, args);
+      const evaluated = Eval(func.body, innerEnv);
+      return unwrapReturnValue(evaluated);
+    default:
+      return new PlugError(`Not a function ${func.constructor.name}`);
+  }
+};
+
+const createFunctionScope = (func, args) => {
+  // pass in the function's environment to allow for closures
+  const env = new EnclosedEnvironment(func.environment);
+
+  func.parameters.forEach((param, index) => {
+    env.set(param.value, args[index]);
+  });
+
+  return env;
+};
+
+const unwrapReturnValue = object => {
+  return object instanceof ReturnValue ? object.value : object;
 };
 
 const evalIfExpression = (expression, env) => {

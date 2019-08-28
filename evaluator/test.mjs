@@ -8,6 +8,7 @@ import {
   PlugArray,
   PlugBoolean,
   PlugError,
+  PlugFunction,
   PlugString
 } from "../object/index";
 import { Environment } from "../object/environment";
@@ -212,6 +213,37 @@ describe("Evaluator", () => {
       typeof testCase.expected === "number"
         ? testIntegerObject(testCase.expected, evaluated)
         : testErrorObject(testCase.expected, evaluated);
+    });
+  });
+
+  it("should evaluate function declarations", () => {
+    const input = "func(x) {return x + 2;}";
+    const evaluated = testEval(input);
+
+    expect(evaluated).toImplement(PlugFunction);
+    expect(evaluated.parameters.length).toEqual(1);
+    expect(evaluated.parameters[0].string()).toEqual("x");
+    expect(evaluated.body.string()).toEqual("return (x + 2);");
+  });
+
+  it("should evaluate call expressions", () => {
+    const testCases = [
+      { input: "let identity = func(x) { x; }; identity(5);", expected: 5 },
+      {
+        input: "let identity = func(x) { return x; }; identity(5);",
+        expected: 5
+      },
+      { input: "let double = func(x) { x * 2; }; double(5);", expected: 10 },
+      { input: "let add = func(x, y) { x + y; }; add(5, 5);", expected: 10 },
+      {
+        input: "let add = func(x, y) { x + y; }; add(5 + 5, add(5, 5));",
+        expected: 20
+      },
+      { input: "func(x) { x; }(5)", expected: 5 }
+    ];
+
+    testCases.forEach(testCase => {
+      testIntegerObject(testCase.expected, testEval(testCase.input));
     });
   });
 });

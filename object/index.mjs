@@ -104,6 +104,27 @@ class ReturnValue extends Object {
   }
 }
 
+class PlugFunction extends Object {
+  constructor(parameters, body, environment) {
+    super();
+    this.parameters = parameters;
+    this.body = body;
+    this.environment = environment;
+  }
+
+  type() {
+    return FUNCTION;
+  }
+
+  inspect() {
+    let argStrings = [];
+    this.parameters.forEach(param => argStrings.push(param.inspect()));
+
+    return `func(${argStrings.join(", ")}) 
+    ${this.body.string()}`;
+  }
+}
+
 class PlugError extends Object {
   constructor(message) {
     super();
@@ -125,6 +146,7 @@ export {
   PlugString,
   PlugBoolean,
   PlugArray,
+  PlugFunction,
   ReturnValue,
   PlugError
 };
