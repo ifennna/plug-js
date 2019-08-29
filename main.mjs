@@ -1,8 +1,6 @@
-import Lexer from "./lexer";
+import fs from "fs";
+import { Scan } from "./scanner/index";
 
-const lexer = new Lexer("samantha - +");
-
-console.log(lexer.nextToken());
-console.log(lexer.nextToken());
-console.log(lexer.nextToken());
-console.log(lexer.nextToken());
+fs.readFile(process.argv[2], (error, data) => {
+  Scan(data.toString());
+});
