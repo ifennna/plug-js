@@ -1,4 +1,4 @@
-import { PlugError } from "../object/index";
+import { PlugError } from "../object/index.js";
 
 const describe = (description, func) => {
   console.log(description);

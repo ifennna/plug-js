@@ -16,8 +16,8 @@ import {
   Program,
   ReturnStatement,
   StringLiteral
-} from "../ast/index";
-import Token from "../token/index";
+} from "../ast/index.js";
+import Token from "../token/index.js";
 
 const LOWEST = 0;
 const EQUALS = 1;

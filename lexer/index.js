@@ -1,4 +1,4 @@
-import Token from "../token";
+import Token from "../token/index.js";
 
 export default class Lexer {
   constructor(input) {

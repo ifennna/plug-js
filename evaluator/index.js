@@ -13,7 +13,7 @@ import {
   PlugArray,
   PlugFunction,
   Builtin
-} from "../object/index";
+} from "../object/index.js";
 import {
   ArrayLiteral,
   BlockStatement,
@@ -31,9 +31,9 @@ import {
   Program,
   ReturnStatement,
   StringLiteral
-} from "../ast/index";
-import { EnclosedEnvironment } from "../object/environment";
-import { builtins } from "./builtins";
+} from "../ast/index.js";
+import { EnclosedEnvironment } from "../object/environment.js";
+import { builtins } from "./builtins.js";
 
 const NULL = new Null();
 const TRUE = new PlugBoolean(true);

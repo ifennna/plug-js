@@ -1,7 +1,7 @@
-import { Environment } from "../object/environment";
-import Lexer from "../lexer/index";
-import Parser from "../parser/index";
-import Eval from "../evaluator/index";
+import { Environment } from "../object/environment.js";
+import Lexer from "../lexer/index.js";
+import Parser from "../parser/index.js";
+import Eval from "../evaluator/index.js";
 
 export const Scan = text => {
   const env = new Environment();

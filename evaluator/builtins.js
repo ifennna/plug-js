@@ -6,7 +6,7 @@ import {
   PlugArray,
   PlugError,
   PlugString
-} from "../object/index";
+} from "../object/index.js";
 
 export const builtins = new Map();
 
