@@ -20,13 +20,14 @@ import {
 import Token from "../token/index.js";
 
 const LOWEST = 0;
-const EQUALS = 1;
-const LESSGREATER = 2;
-const SUM = 3;
-const PRODUCT = 4;
-const PREFIX = 5;
-const CALL = 6;
-const INDEX = 7;
+const ASSIGNMENT = 1;
+const EQUALS = 2;
+const LESSGREATER = 3;
+const SUM = 4;
+const PRODUCT = 5;
+const PREFIX = 6;
+const CALL = 7;
+const INDEX = 8;
 
 const precedenceTable = new Map();
 precedenceTable.set(Token.EQ, EQUALS);
@@ -37,6 +38,7 @@ precedenceTable.set(Token.PLUS, SUM);
 precedenceTable.set(Token.MINUS, SUM);
 precedenceTable.set(Token.SLASH, PRODUCT);
 precedenceTable.set(Token.ASTERISK, PRODUCT);
+precedenceTable.set(Token.ASSIGN, ASSIGNMENT);
 precedenceTable.set(Token.LPAREN, CALL);
 precedenceTable.set(Token.LBRACKET, INDEX);
 
@@ -66,6 +68,7 @@ export default class Parser {
     this.infixParseFunctions.set(Token.MINUS, this.parseInfixExpression);
     this.infixParseFunctions.set(Token.SLASH, this.parseInfixExpression);
     this.infixParseFunctions.set(Token.ASTERISK, this.parseInfixExpression);
+    this.infixParseFunctions.set(Token.ASSIGN, this.parseInfixExpression);
     this.infixParseFunctions.set(Token.EQ, this.parseInfixExpression);
     this.infixParseFunctions.set(Token.NOT_EQ, this.parseInfixExpression);
     this.infixParseFunctions.set(Token.LT, this.parseInfixExpression);

@@ -21,6 +21,7 @@ import {
   CallExpression,
   ExpressionStatement,
   FunctionLiteral,
+  ForStatement,
   Identifier,
   IfExpression,
   IndexExpression,
@@ -58,6 +59,8 @@ export default function Eval(node, env) {
       if (isError(letValue)) return letValue;
       env.set(node.name.value, letValue);
       break;
+    case ForStatement:
+      return evalForLoop(node, env);
     case FunctionLiteral:
       const parameters = node.parameters;
       const body = node.body;
@@ -70,7 +73,7 @@ export default function Eval(node, env) {
 
       return applyFunction(func, args);
     case IfExpression:
-      return evalIfExpression(node);
+      return evalIfExpression(node, env);
     case IndexExpression:
       const leftExpression = Eval(node.left, env);
       if (isError(leftExpression)) return leftExpression;
@@ -83,6 +86,7 @@ export default function Eval(node, env) {
       if (elements.length === 1 && isError(elements[0])) return elements;
       return new PlugArray(elements);
     case InfixExpression:
+      if (node.operator === "=") return evalAssignment(node, env);
       let left = Eval(node.left, env);
       if (isError(left)) return left;
       let right = Eval(node.right, env);
@@ -139,6 +143,31 @@ const evalBlockStatement = (block, env) => {
   return result;
 };
 
+const evalForLoop = (statement, env) => {
+  let body;
+  let value;
+
+  const loopNumber = statement.range.callArguments[0];
+  if (loopNumber.constructor === IntegerLiteral) {
+    value = loopNumber.value;
+  } else if (loopNumber.constructor === Identifier) {
+    value = env.get(loopNumber.value).value;
+  }
+
+  for (let i = 0; i < value; i++) {
+    env.set(statement.index.value, new Integer(i));
+    body = evalBlockStatement(statement.body, env);
+
+    if (body) {
+      const resultType = body.type();
+      if (resultType === RETURN_VALUE || resultType === ERROR) {
+        return body;
+      }
+    }
+  }
+  return body;
+};
+
 const evalExpressions = (expressions, env) => {
   let result = [];
   expressions.forEach(expression => {
@@ -148,6 +177,43 @@ const evalExpressions = (expressions, env) => {
     result.push(evaluated);
   });
   return result;
+};
+
+const evalAssignment = (node, env) => {
+  const value = Eval(node.right, env);
+  if (isError(value)) return value;
+
+  switch (node.left.constructor) {
+    case Identifier:
+      env.set(node.left.value, value);
+      break;
+    case IndexExpression:
+      const name = node.left.left.value;
+      const array = env.get(name);
+      if (!array) return PlugError("Array has not been declared");
+      const index = getIndex(node, env);
+      const elements = array.elements;
+      while (elements.length < index + 1) {
+        elements.push(NULL);
+      }
+      elements[index] = value;
+      array.elements = elements;
+      env.set(name, array);
+  }
+};
+
+const getIndex = (node, env) => {
+  let indexValue;
+  const index = node.left.index;
+  switch (index.constructor) {
+    case IntegerLiteral:
+      indexValue = index.value;
+      break;
+    case Identifier:
+      const indexObject = env.get(index.value);
+      indexValue = indexObject.value;
+  }
+  return indexValue;
 };
 
 const applyFunction = (func, args) => {
@@ -179,7 +245,7 @@ const unwrapReturnValue = object => {
 };
 
 const evalIfExpression = (expression, env) => {
-  const condition = Eval(expression.condition);
+  const condition = Eval(expression.condition, env);
   if (isError(condition)) return condition;
 
   if (isTruthy(condition)) {
