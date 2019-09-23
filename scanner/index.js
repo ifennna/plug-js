@@ -2,8 +2,9 @@ import { Environment } from "../object/environment.js";
 import Lexer from "../lexer/index.js";
 import Parser from "../parser/index.js";
 import Eval from "../evaluator/index.js";
+import { setPrinter } from "../evaluator/builtins.js";
 
-export const Scan = text => {
+export const Scan = (text, out) => {
   const env = new Environment();
 
   const lexer = new Lexer(text);
@@ -16,10 +17,11 @@ export const Scan = text => {
     return;
   }
 
+  setPrinter(out);
   Eval(program, env);
 };
 
-const printParserErrors = errors => {
-  console.log("Parser Errors: \n");
-  errors.forEach(error => console.log(`${error}\n`));
+const printParserErrors = (errors, out) => {
+  out.write("Parser Errors: \n");
+  errors.forEach(error => out.write(`${error}\n`));
 };

@@ -10,6 +10,12 @@ import {
 
 export const builtins = new Map();
 
+let Printer = {};
+const setPrinter = out => {
+  Printer = out;
+};
+export { setPrinter };
+
 const lengthFunction = (...args) => {
   if (args.length !== 1)
     return new PlugError(
@@ -104,7 +110,7 @@ const pushFunction = (...args) => {
 };
 
 const printFunction = (...args) => {
-  args.forEach(argument => console.log(argument.inspect()));
+  args.forEach(argument => Printer.write(argument.inspect()));
 };
 
 builtins.set("len", new Builtin(lengthFunction));
